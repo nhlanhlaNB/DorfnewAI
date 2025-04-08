@@ -1,0 +1,28 @@
+.content {
+    flex-grow: 2;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.post {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.post img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}

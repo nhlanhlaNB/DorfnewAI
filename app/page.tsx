@@ -1,17 +1,21 @@
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import MainContent from '../components/MainContent';
-import styles from '../styles/Home.module.css';
-
+import styles from '../styles/Home.module.css'; // Assuming you have styles for the page
 
 export default function Home() {
   return (
     <div className={styles.container}>
+      {/* Sidebar */}
       <Sidebar />
+
+      {/* Main Area with Header and Main Content */}
       <div className={styles.mainArea}>
         <Header />
         <MainContent />
       </div>
     </div>
+
   );
 }
+

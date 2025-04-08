@@ -1,0 +1,27 @@
+.header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f8f8;
+}
+
+.profilePic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.info {
+    flex-grow: 1;
+}
+
+.name {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.bio {
+    font-size: 1.2rem;
+    color: #666;
+}
