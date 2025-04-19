@@ -1,0 +1,88 @@
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(180deg, #1e1e2f 0%, #2a2a40 100%);
+  color: #ffffff;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+  font-family: "Inter", sans-serif;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logoText {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #7b68ee, #00ddeb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebarButton {
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: #b0b0c0;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebarButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.active {
+  background: linear-gradient(90deg, #7b68ee, #00ddeb);
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(123, 104, 238, 0.3);
+}
+
+.creatorBox {
+  text-align: center;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.premiumText {
+  font-size: 14px;
+  color: #b0b0c0;
+  margin-bottom: 10px;
+}
+
+.getStarted {
+  background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+}
+
+.getStarted:hover {
+  background: linear-gradient(90deg, #ff8e53, #ff6b6b);
+  transform: translateY(-2px);
+}
+
+
