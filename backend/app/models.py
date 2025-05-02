@@ -1,5 +1,3 @@
-#This page is used to define database models
-
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -10,8 +8,8 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    affiliate_id = Column(String, unique=True, nullable=True)  # Added for affiliate program
     channels = relationship("Channel", back_populates="creator")
-    #add ID for affirliate program
 
 class Channel(Base):
     __tablename__ = "channels"
