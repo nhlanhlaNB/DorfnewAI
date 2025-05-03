@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .models import User, Channel, Content, Subscription
+from ...database.models import User, Channel, Content, Subscription
 from .schemas import UserCreate, ChannelCreate, ContentCreate
 from .auth import get_password_hash
 

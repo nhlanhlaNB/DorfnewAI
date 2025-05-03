@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from backend.app.models import User,Channel,Subscription
-from .database import get_db, Base, engine
+from database.models import User,Channel,Subscription
+from ...database.database import get_db, Base, engine
 from .auth import create_access_token, get_current_user, verify_password
 from .crud import create_user, create_channel, create_content, subscribe_to_channel
 from .schemas import UserCreate, Token, ChannelCreate, ContentCreate

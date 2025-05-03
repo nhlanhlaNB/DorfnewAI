@@ -1,8 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from database import Base, engine
 from models import User, Channel, Content, Subscription
 
 def init_db():
-    # Create all tables
     Base.metadata.create_all(bind=engine)
     print("Database tables created successfully!")
 
