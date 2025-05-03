@@ -12,7 +12,6 @@ export default function Home() {
       <div className={styles.mainArea}>
         <Header />
         <MainContent />
-
       </div>
     </div>
   );
