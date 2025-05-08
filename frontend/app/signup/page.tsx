@@ -1,18 +1,28 @@
+"use client";
+
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/app/landing/components/ui/button";
-import { Input } from "@/app/landing/components/ui/input";
-import { Label } from "@/app/landing/components/ui/label";
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  CardTitle,
+  CardDescription,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Card,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
-  const navigate = useNavigate();
+
+  const router = useRouter();
   const { toast } = useToast();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -20,20 +30,13 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // In a real app, you would call your backend API here
-      // For now, we'll simulate a successful signup
       console.log("Signing up with:", { email, password, username });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       toast({
         title: "Account created successfully!",
         description: "Welcome to DorfNewAI",
       });
-      
-      // Redirect to dashboard
-      navigate("/");
+      router.push("/");
     } catch (error) {
       toast({
         title: "Sign up failed",
@@ -48,9 +51,10 @@ const SignUp = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background to-secondary/30">
       <div className="absolute top-6 left-6">
-        <Link to="/" className="text-2xl font-bold ai-gradient-text">DorfNewAI</Link>
+        <Link href="/" className="text-2xl font-bold ai-gradient-text">
+          DorfNewAI
+        </Link>
       </div>
-      
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
@@ -59,12 +63,13 @@ const SignUp = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+         d
           <form onSubmit={handleSignUp} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
-              <Input 
-                id="username" 
-                placeholder="johndoe" 
+              <Input
+                id="username"
+                placeholder="johndoe"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -72,10 +77,10 @@ const SignUp = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="john@example.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -83,8 +88,8 @@ const SignUp = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
+              <Input
+                id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -99,17 +104,17 @@ const SignUp = () => {
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-muted-foreground">
             By creating an account, you agree to our
-            <Link to="/terms" className="underline underline-offset-4 hover:text-primary mx-1">
+            <Link href="/terms" className="underline underline-offset-4 hover:text-primary mx-1">
               Terms of Service
             </Link>
             and
-            <Link to="/privacy" className="underline underline-offset-4 hover:text-primary ml-1">
+            <Link href="/privacy" className="underline underline-offset-4 hover:text-primary ml-1">
               Privacy Policy
             </Link>
           </div>
           <div className="text-sm text-center text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
               Sign in
             </Link>
           </div>

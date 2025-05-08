@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/components/*": [
+        "./app/landing/components/*"
       ]
     },
     "target": "ES2017"
@@ -32,8 +35,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "app/SubscriptionPage/page.jsx"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

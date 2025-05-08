@@ -1,20 +1,33 @@
+"use client";
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/app/landing/components/ui/button";
-import { Textarea } from "@/app/landing/components/ui/textarea";
-import { Label } from "@/app/landing/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CardTitle, CardDescription, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  CardTitle,
+  CardDescription,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Card,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
 const TryNow = () => {
   const [prompt, setPrompt] = useState("");
   const [contentType, setContentType] = useState("image");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  
-  const navigate = useNavigate();
+
   const { toast } = useToast();
 
   const handleGenerate = async (e: React.FormEvent) => {
@@ -27,27 +40,19 @@ const TryNow = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
     setResult(null);
 
     try {
-      // In a real app, you would call your backend API here
-      // For now, we'll simulate the AI generation process
       console.log("Generating content:", { prompt, contentType });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate a result (would be a URL to the generated content in a real app)
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       const mockResults: Record<string, string> = {
         image: "https://source.unsplash.com/random/600x400",
         video: "https://example.com/video.mp4",
-        music: "https://example.com/music.mp3"
+        music: "https://example.com/music.mp3",
       };
-      
       setResult(mockResults[contentType]);
-      
       toast({
         title: "Content generated!",
         description: "Sign up to unlock unlimited generations.",
@@ -67,17 +72,18 @@ const TryNow = () => {
     <div className="min-h-screen flex flex-col p-4 bg-gradient-to-b from-background to-secondary/30">
       <div className="container mx-auto py-8">
         <div className="flex justify-between items-center mb-8">
-          <Link to="/" className="text-2xl font-bold ai-gradient-text">DorfNewAI</Link>
+          <Link href="/" className="text-2xl font-bold ai-gradient-text">
+            DorfNewAI
+          </Link>
           <div className="flex gap-4">
             <Button asChild variant="outline">
-              <Link to="/login">Sign In</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button asChild>
-              <Link to="/signup">Sign Up Free</Link>
+              <Link href="/signup">Sign Up Free</Link>
             </Button>
           </div>
         </div>
-        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card className="w-full">
             <CardHeader className="space-y-1">
@@ -90,10 +96,7 @@ const TryNow = () => {
               <form onSubmit={handleGenerate} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="contentType">Content Type</Label>
-                  <Select 
-                    value={contentType} 
-                    onValueChange={setContentType}
-                  >
+                  <Select value={contentType} onValueChange={setContentType}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select content type" />
                     </SelectTrigger>
@@ -106,9 +109,9 @@ const TryNow = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="prompt">Describe what you want to create</Label>
-                  <Textarea 
-                    id="prompt" 
-                    placeholder="E.g., A futuristic cityscape at sunset with flying cars" 
+                  <Textarea
+                    id="prompt"
+                    placeholder="E.g., A futuristic cityscape at sunset with flying cars"
                     rows={5}
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
@@ -123,11 +126,14 @@ const TryNow = () => {
             </CardContent>
             <CardFooter>
               <p className="text-sm text-muted-foreground text-center w-full">
-                This is a one-time free trial. <Link to="/signup" className="text-primary hover:underline">Sign up</Link> for unlimited access.
+                This is a one-time free trial.{" "}
+                <Link href="/signup" className="text-primary hover:underline">
+                  Sign up
+                </Link>{" "}
+                for unlimited access.
               </p>
             </CardFooter>
           </Card>
-          
           <div className="flex flex-col">
             <Card className="w-full flex-1">
               <CardHeader>
@@ -142,9 +148,9 @@ const TryNow = () => {
                 ) : result ? (
                   <div className="flex flex-col items-center space-y-4">
                     {contentType === "image" ? (
-                      <img 
-                        src={result} 
-                        alt="AI-generated content" 
+                      <img
+                        src={result}
+                        alt="AI-generated content"
                         className="w-full h-auto max-h-[400px] object-contain rounded-md"
                       />
                     ) : (
@@ -155,7 +161,7 @@ const TryNow = () => {
                     <div className="text-center">
                       <p className="mb-4">Like what you see? Sign up for unlimited generations!</p>
                       <Button asChild>
-                        <Link to="/signup">Create Account</Link>
+                        <Link href="/signup">Create Account</Link>
                       </Button>
                     </div>
                   </div>

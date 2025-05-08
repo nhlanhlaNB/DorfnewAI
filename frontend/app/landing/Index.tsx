@@ -1,14 +1,27 @@
 import { Button } from "@/app/landing/components/ui/button";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Bot, Image, Music, Video, Check } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/app/landing/components/ui/avatar";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/app/landing/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/landing/components/ui/select";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/app/landing/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/landing/components/ui/select";
 import { Label } from "@/app/landing/components/ui/label";
 import { Textarea } from "@/app/landing/components/ui/textarea";
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/app/landing/components/ui/use-toast";
-import "../../../styles/landing.module.css";
+import "@/styles/landing.module.css";
 
 const Index = () => {
   // State for TryNow section
@@ -74,7 +87,7 @@ const Index = () => {
       buttonText: "Try Now",
       buttonVariant: "outline" as const,
       highlight: false,
-      path: "#try-now"
+      path: "#try-now",
     },
     {
       name: "Standard",
@@ -90,7 +103,7 @@ const Index = () => {
       buttonText: "Get Started",
       buttonVariant: "default" as const,
       highlight: true,
-      path: "/signup"
+      path: "/signup",
     },
     {
       name: "Pro",
@@ -107,7 +120,7 @@ const Index = () => {
       buttonText: "Sign Up",
       buttonVariant: "outline" as const,
       highlight: false,
-      path: "/signup"
+      path: "/signup",
     },
   ];
 
@@ -121,27 +134,26 @@ const Index = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
     setResult(null);
 
     try {
       // In a real app, you would call your backend API here
-      // For now, we'll simulate the AI generation process
       console.log("Generating content:", { prompt, contentType });
-      
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate a result (would be a URL to the generated content in a real app)
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // Simulate a result
       const mockResults: Record<string, string> = {
         image: "https://source.unsplash.com/random/600x400",
         video: "https://example.com/video.mp4",
-        music: "https://example.com/music.mp3"
+        music: "https://example.com/music.mp3",
       };
-      
+
       setResult(mockResults[contentType]);
-      
+
       toast({
         title: "Content generated!",
         description: "Sign up to unlock unlimited generations.",
@@ -162,8 +174,10 @@ const Index = () => {
       {/* Header/Navigation */}
       <header className="py-6 border-b border-border bg-background/95 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold ai-gradient-text">DorfNewAI</Link>
-          
+          <Link href="/" className="text-2xl font-bold ai-gradient-text">
+            DorfNewAI
+          </Link>
+
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
@@ -177,33 +191,48 @@ const Index = () => {
             <a href="#try-now" className="text-muted-foreground hover:text-foreground transition-colors">
               Try Now
             </a>
-            <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors">
               Sign In
             </Link>
             <Button asChild size="sm">
-              <Link to="/signup">Sign Up Free</Link>
+              <Link href="/signup">Sign Up Free</Link>
             </Button>
           </nav>
-          
+
           <Button variant="ghost" className="md:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-menu"
+            >
+              <line x1="4" x2="20" y1="12" y2="12" />
+              <line x1="4" x2="20" y1="6" y2="6" />
+              <line x1="4" x2="20" y1="18" y2="18" />
+            </svg>
           </Button>
         </div>
       </header>
-      
+
       <main className="pt-24">
         {/* Hero Section */}
         <div className="relative overflow-hidden">
           {/* Background blur elements */}
-          <div 
+          <div
             className="blur-circle bg-purple-700 w-[500px] h-[500px] -top-[100px] -left-[100px]"
             style={{ zIndex: -1 }}
           />
-          <div 
+          <div
             className="blur-circle bg-indigo-500 w-[400px] h-[400px] top-[30%] -right-[100px]"
             style={{ zIndex: -1 }}
           />
-          
+
           <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight ai-gradient-text">
@@ -217,7 +246,7 @@ const Index = () => {
                   <a href="#try-now">Try for Free</a>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-lg py-6 px-8">
-                  <Link to="/login">Sign In</Link>
+                  <Link href="/login">Sign In</Link>
                 </Button>
               </div>
             </div>
@@ -327,13 +356,8 @@ const Index = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    asChild
-                    variant={plan.buttonVariant}
-                    className="w-full"
-                    size="lg"
-                  >
-                    <a href={plan.path}>{plan.buttonText}</a>
+                  <Button asChild variant={plan.buttonVariant} className="w-full" size="lg">
+                    <Link href={plan.path}>{plan.buttonText}</Link>
                   </Button>
                 </div>
               ))}
@@ -365,10 +389,7 @@ const Index = () => {
                   <form onSubmit={handleGenerate} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="contentType">Content Type</Label>
-                      <Select 
-                        value={contentType} 
-                        onValueChange={setContentType}
-                      >
+                      <Select value={contentType} onValueChange={setContentType}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select content type" />
                         </SelectTrigger>
@@ -381,12 +402,12 @@ const Index = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="prompt">Describe what you want to create</Label>
-                      <Textarea 
-                        id="prompt" 
-                        placeholder="E.g., A futuristic cityscape at sunset with flying cars" 
+                      <Textarea
+                        id="prompt"
+                        placeholder="E.g., A futuristic cityscape at sunset with flying cars"
                         rows={5}
                         value={prompt}
-                        onChange={(e: { target: { value: SetStateAction<string>; }; }) => setPrompt(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
                         className="resize-none"
                       />
                     </div>
@@ -397,11 +418,11 @@ const Index = () => {
                 </CardContent>
                 <CardFooter>
                   <p className="text-sm text-muted-foreground text-center w-full">
-                    This is a one-time free trial. <Link to="/signup" className="text-primary hover:underline">Sign up</Link> for unlimited access.
+                    This is a one-time free trial. <Link href="/signup" className="text-primary hover:underline">Sign up</Link> for unlimited access.
                   </p>
                 </CardFooter>
               </Card>
-              
+
               <Card className="w-full flex-1">
                 <CardHeader>
                   <CardTitle>Result</CardTitle>
@@ -415,9 +436,9 @@ const Index = () => {
                   ) : result ? (
                     <div className="flex flex-col items-center space-y-4">
                       {contentType === "image" ? (
-                        <img 
-                          src={result} 
-                          alt="AI-generated content" 
+                        <img
+                          src={result}
+                          alt="AI-generated content"
                           className="w-full h-auto max-h-[400px] object-contain rounded-md"
                         />
                       ) : (
@@ -428,7 +449,7 @@ const Index = () => {
                       <div className="text-center">
                         <p className="mb-4">Like what you see? Sign up for unlimited generations!</p>
                         <Button asChild>
-                          <Link to="/signup">Create Account</Link>
+                          <Link href="/signup">Create Account</Link>
                         </Button>
                       </div>
                     </div>
@@ -443,7 +464,7 @@ const Index = () => {
           </div>
         </div>
       </main>
-      
+
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="container mx-auto px-4 py-12">
@@ -454,39 +475,73 @@ const Index = () => {
                 Advanced AI tools for creating stunning videos, images, and music.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-4">Product</h4>
               <ul className="space-y-2">
-                <li><a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a></li>
-                <li><a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a></li>
-                <li><a href="#try-now" className="text-muted-foreground hover:text-primary transition-colors">Try for Free</a></li>
+                <li>
+                  <a href="#features" className="text-muted-foreground hover:text-primary transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#try-now" className="text-muted-foreground hover:text-primary transition-colors">
+                    Try for Free
+                  </a>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-4">Resources</h4>
               <ul className="space-y-2">
-                <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
-                <li><Link to="/tutorials" className="text-muted-foreground hover:text-primary transition-colors">Tutorials</Link></li>
-                <li><Link to="/support" className="text-muted-foreground hover:text-primary transition-colors">Support</Link></li>
+                <li>
+                  <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutorials" className="text-muted-foreground hover:text-primary transition-colors">
+                    Tutorials
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/support" className="text-muted-foreground hover:text-primary transition-colors">
+                    Support
+                  </Link>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-4">Company</h4>
               <ul className="space-y-2">
-                <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About</Link></li>
-                <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link></li>
-                <li><Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li>
+                  <Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-muted-foreground text-sm">
-              © 2025 DorfNewAI. All rights reserved.
-            </p>
+            <p className="text-muted-foreground text-sm">© 2025 DorfNewAI. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-muted-foreground hover:text-primary">
                 <span className="sr-only">Twitter</span>
@@ -497,7 +552,11 @@ const Index = () => {
               <a href="#" className="text-muted-foreground hover:text-primary">
                 <span className="sr-only">GitHub</span>
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path>
+                  <path
+                    fillRule="evenodd"
+                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                    clipRule="evenodd"
+                  ></path>
                 </svg>
               </a>
             </div>
