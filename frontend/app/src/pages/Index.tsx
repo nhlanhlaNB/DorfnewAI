@@ -107,6 +107,55 @@ const Index = () => {
             --violet-400: #c084fc;
             --cyan-300: #22d3ee;
           }
+
+          /* Glow effect for buttons */
+          .glow-button {
+            transition: box-shadow 0.3s ease, filter 0.3s ease;
+          }
+          .glow-button:hover {
+            box-shadow: 0 0 15px rgba(192, 132, 252, 0.5), 0 0 30px rgba(34, 211, 238, 0.3);
+            filter: brightness(1.1);
+          }
+
+          /* Glow effect for feature cards */
+          .glow-card {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+          }
+          .glow-card:hover {
+            box-shadow: 0 0 20px rgba(192, 132, 252, 0.4), 0 0 40px rgba(34, 211, 238, 0.2);
+            transform: translateY(-5px);
+          }
+
+          /* Glow effect for pricing cards */
+          .glow-pricing-card {
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+          }
+          .glow-pricing-card:hover {
+            box-shadow: 0 0 25px rgba(192, 132, 252, 0.5), 0 0 50px rgba(34, 211, 238, 0.3);
+            transform: translateY(-5px);
+          }
+
+          /* Glow effect for nav and footer links */
+          .glow-link {
+            position: relative;
+            transition: color 0.3s ease;
+          }
+          .glow-link:hover {
+            color: var(--cyan-300);
+          }
+          .glow-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--violet-400), var(--cyan-300));
+            transition: width 0.3s ease;
+          }
+          .glow-link:hover::after {
+            width: 100%;
+          }
         `}
       </style>
 
@@ -148,26 +197,26 @@ const Index = () => {
             alignItems: "center",
             gap: "1.5rem"
           }}>
-            <a href="#features" style={{
+            <a href="#features" className="glow-link" style={{
               color: "var(--muted-foreground)",
               transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
             }}>
               Features
             </a>
-            <a href="#pricing" style={{
+            <a href="#pricing" className="glow-link" style={{
               color: "var(--muted-foreground)",
               transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
             }}>
               Pricing
             </a>
-            <Button asChild size="sm" style={{
+            <Button asChild size="sm" className="glow-button" style={{
               border: "1px solid var(--primary)",
               borderRadius: "0.375rem",
               padding: "0.5rem 1rem"
             }}>
               <a href="#try-now">Try for Free</a>
             </Button>
-            <Button asChild size="sm" style={{
+            <Button asChild size="sm" className="glow-button" style={{
               border: "1px solid var(--primary)",
               borderRadius: "0.375rem",
               padding: "0.5rem 1rem"
@@ -252,7 +301,7 @@ const Index = () => {
                 gap: "1rem",
                 justifyContent: "center"
               }}>
-                <Button asChild size="lg" style={{
+                <Button asChild size="lg" className="glow-button" style={{
                   fontSize: "1.125rem",
                   padding: "1.5rem 2rem",
                   border: "1px solid var(--primary)",
@@ -260,7 +309,7 @@ const Index = () => {
                 }}>
                   <a href="#try-now">Try for Free</a>
                 </Button>
-                <Button asChild variant="outline" size="lg" style={{
+                <Button asChild variant="outline" size="lg" className="glow-button" style={{
                   fontSize: "1.125rem",
                   padding: "1.5rem 2rem",
                   border: "1px solid var(--primary)",
@@ -317,6 +366,7 @@ const Index = () => {
               {features.map((feature) => (
                 <div
                   key={feature.title}
+                  className="glow-card"
                   style={{
                     backgroundColor: "var(--card)",
                     padding: "1.5rem",
@@ -374,7 +424,7 @@ const Index = () => {
                 color: "transparent",
                 backgroundImage: "linear-gradient(to right, var(--violet-400), var(--cyan-300))"
               }}>
-                Simple, Transparent Pricing
+                Simple, transparent pricing
               </h2>
               <p style={{
                 fontSize: "1.125rem",
@@ -394,6 +444,7 @@ const Index = () => {
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.name}
+                  className="glow-pricing-card"
                   style={{
                     backgroundColor: "var(--card)",
                     padding: "2rem",
@@ -446,6 +497,7 @@ const Index = () => {
                   <Button
                     asChild
                     variant={plan.buttonVariant}
+                    className="glow-button"
                     style={{ width: "80%", backgroundColor: plan.highlight ? "var(--primary)" : "transparent", borderColor: "var(--primary)", fontSize: "0.875rem", padding: "0.5rem" }}
                     size="lg"
                   >
@@ -483,15 +535,15 @@ const Index = () => {
             <div>
               <h4 style={{ fontWeight: 500, marginBottom: "1rem", color: "rgb(var(--foreground-rgb))" }}>Product</h4>
               <ul style={{ gap: "0.5rem" }}>
-                <li><a href="#features" style={{
+                <li><a href="#features" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Features</a></li>
-                <li><a href="#pricing" style={{
+                <li><a href="#pricing" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Pricing</a></li>
-                <li><a href="#try-now" style={{
+                <li><a href="#try-now" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Try for Free</a></li>
@@ -501,15 +553,15 @@ const Index = () => {
             <div>
               <h4 style={{ fontWeight: 500, marginBottom: "1rem", color: "rgb(var(--foreground-rgb))" }}>Resources</h4>
               <ul style={{ gap: "0.5rem" }}>
-                <li><Link to="/blog" style={{
+                <li><Link to="/blog" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Blog</Link></li>
-                <li><Link to="/tutorials" style={{
+                <li><Link to="/tutorials" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Tutorials</Link></li>
-                <li><Link to="/support" style={{
+                <li><Link to="/support" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Support</Link></li>
@@ -519,15 +571,15 @@ const Index = () => {
             <div>
               <h4 style={{ fontWeight: 500, marginBottom: "1rem", color: "rgb(var(--foreground-rgb))" }}>Company</h4>
               <ul style={{ gap: "0.5rem" }}>
-                <li><Link to="/about" style={{
+                <li><Link to="/about" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>About</Link></li>
-                <li><Link to="/contact" style={{
+                <li><Link to="/contact" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Contact</Link></li>
-                <li><Link to="/privacy" style={{
+                <li><Link to="/privacy" className="glow-link" style={{
                   color: "var(--muted-foreground)",
                   transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
                 }}>Privacy Policy</Link></li>
@@ -555,7 +607,7 @@ const Index = () => {
               gap: "1.5rem",
               marginTop: "1rem"
             }}>
-              <a href="#" style={{
+              <a href="#" className="glow-link" style={{
                 color: "var(--muted-foreground)",
                 transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
               }}>
@@ -564,7 +616,7 @@ const Index = () => {
                   <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
                 </svg>
               </a>
-              <a href="#" style={{
+              <a href="#" className="glow-link" style={{
                 color: "var(--muted-foreground)",
                 transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
               }}>
