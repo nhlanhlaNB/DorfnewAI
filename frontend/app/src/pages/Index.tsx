@@ -1,20 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Bot, Image, Music, Video, Check } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useToast } from "@/components/ui/toast-provider";
 
 const Index = () => {
-  // State for TryNow section
-  const [prompt, setPrompt] = useState("");
-  const [contentType, setContentType] = useState("image");
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Features data
@@ -38,28 +29,6 @@ const Index = () => {
       title: "Smart Content Prompting",
       description: "Get guidance on creating the perfect prompts for optimal results.",
       icon: Bot,
-    },
-  ];
-
-  // Testimonials data
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      title: "Digital Content Creator",
-      quote: "DorfNewAI has completely transformed my workflow. I can create videos and images in minutes that used to take me hours.",
-      avatar: "SJ",
-    },
-    {
-      name: "Marcus Chen",
-      title: "Indie Game Developer",
-      quote: "The music generation capabilities are incredible. I've saved thousands on custom soundtracks for my games.",
-      avatar: "MC",
-    },
-    {
-      name: "Priya Patel",
-      title: "Marketing Director",
-      quote: "Our marketing team relies on DorfNewAI daily. The speed and quality of content generation gives us a competitive edge.",
-      avatar: "PP",
     },
   ];
 
@@ -110,56 +79,10 @@ const Index = () => {
     },
   ];
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt) {
-      toast({
-        title: "Please enter a prompt",
-        description: "You need to provide a description of what you want to create.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    setResult(null);
-
-    try {
-      console.log("Generating content:", { prompt, contentType });
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      const mockResults: Record<string, string> = {
-        image: "https://source.unsplash.com/random/600x400",
-        video: "https://example.com/video.mp4",
-        music: "https://example.com/music.mp3"
-      };
-      
-      setResult(mockResults[contentType]);
-      
-      toast({
-        title: "Content generated!",
-        description: "Sign up to unlock unlimited generations.",
-      });
-    } catch (error) {
-      toast({
-        title: "Generation failed",
-        description: "Could not generate content. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div style={{
       minHeight: "100vh",
-      background: `linear-gradient(
-        #16abff33 0deg,
-        #0885ff33 55deg,
-        #54d6ff33 120deg,
-        #0071ff33 160deg,
-        transparent 360deg
-      )`,
+      background: "#2a2a40",
       color: `rgb(255, 255, 255)`,
     }}>
       <style>
@@ -183,12 +106,6 @@ const Index = () => {
             --border: #1e293b;
             --violet-400: #c084fc;
             --cyan-300: #22d3ee;
-          }
-
-          @keyframes spin {
-            to {
-              transform: rotate(360deg);
-            }
           }
         `}
       </style>
@@ -227,7 +144,7 @@ const Index = () => {
           </Link>
           
           <nav style={{
-            display: "none",
+            display: "flex",
             alignItems: "center",
             gap: "1.5rem"
           }}>
@@ -237,32 +154,25 @@ const Index = () => {
             }}>
               Features
             </a>
-            <a href="#testimonials" style={{
-              color: "var(--muted-foreground)",
-              transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
-            }}>
-              Testimonials
-            </a>
             <a href="#pricing" style={{
               color: "var(--muted-foreground)",
               transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
             }}>
               Pricing
             </a>
-            <a href="#try-now" style={{
-              color: "var(--muted-foreground)",
-              transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
+            <Button asChild size="sm" style={{
+              border: "1px solid var(--primary)",
+              borderRadius: "0.375rem",
+              padding: "0.5rem 1rem"
             }}>
-              Try Now
-            </a>
-            <Link to="/login" style={{
-              color: "var(--muted-foreground)",
-              transition: "color 150ms cubic-bezier(0.4, 0, 0.2, 1)"
+              <a href="#try-now">Try for Free</a>
+            </Button>
+            <Button asChild size="sm" style={{
+              border: "1px solid var(--primary)",
+              borderRadius: "0.375rem",
+              padding: "0.5rem 1rem"
             }}>
-              Sign In
-            </Link>
-            <Button asChild size="sm">
-              <Link to="/signup">Sign Up Free</Link>
+              <Link to="/signup">Sign Up</Link>
             </Button>
           </nav>
           
@@ -279,7 +189,6 @@ const Index = () => {
           overflow: "hidden",
           backgroundImage: "var(--secondary-glow)",
         }}>
-          {/* Background blur elements */}
           <div style={{
             position: "absolute",
             borderRadius: "100%",
@@ -339,15 +248,25 @@ const Index = () => {
               </p>
               <div style={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
                 gap: "1rem",
                 justifyContent: "center"
               }}>
-                <Button asChild size="lg" style={{ fontSize: "1.125rem", padding: "1.5rem 2rem" }}>
+                <Button asChild size="lg" style={{
+                  fontSize: "1.125rem",
+                  padding: "1.5rem 2rem",
+                  border: "1px solid var(--primary)",
+                  borderRadius: "0.375rem"
+                }}>
                   <a href="#try-now">Try for Free</a>
                 </Button>
-                <Button asChild variant="outline" size="lg" style={{ fontSize: "1.125rem", padding: "1.5rem 2rem" }}>
-                  <Link to="/login">Sign In다가</Link>
+                <Button asChild variant="outline" size="lg" style={{
+                  fontSize: "1.125rem",
+                  padding: "1.5rem 2rem",
+                  border: "1px solid var(--primary)",
+                  borderRadius: "0.375rem"
+                }}>
+                  <Link to="/signup">Sign Up</Link>
                 </Button>
               </div>
             </div>
@@ -392,7 +311,7 @@ const Index = () => {
 
             <div style={{
               display: "grid",
-              gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
               gap: "2rem"
             }}>
               {features.map((feature) => (
@@ -403,7 +322,13 @@ const Index = () => {
                     padding: "1.5rem",
                     borderRadius: "0.5rem",
                     border: "1px solid var(--border)",
-                    transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)"
+                    transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+                    aspectRatio: "1/1",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center"
                   }}
                 >
                   <div style={{
@@ -416,72 +341,7 @@ const Index = () => {
                     <feature.icon style={{ height: "1.5rem", width: "1.5rem", color: "var(--primary)" }} />
                   </div>
                   <h3 style={{ fontSize: "1.25rem", fontWeight: 500, marginBottom: "0.5rem", color: "rgb(var(--foreground-rgb))" }}>{feature.title}</h3>
-                  <p style={{ color: "var(--muted-foreground)" }}>{feature.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Testimonials Section */}
-        <div id="testimonials" style={{ padding: "4rem 0" }}>
-          <div style={{
-            width: "100%",
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: "0 1rem"
-          }}>
-            <div style={{
-              maxWidth: "48rem",
-              margin: "0 auto 4rem",
-              textAlign: "center"
-            }}>
-              <h2 style={{
-                fontSize: "1.875rem",
-                lineHeight: "2.25rem",
-                fontWeight: 700,
-                marginBottom: "1rem",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                color: "transparent",
-                backgroundImage: "linear-gradient(to right, var(--violet-400), var(--cyan-300))"
-              }}>
-                Loved by Creators Everywhere
-              </h2>
-              <p style={{
-                fontSize: "1.125rem",
-                color: "var(--muted-foreground)"
-              }}>
-                See what our users are saying about DorfNewAI
-              </p>
-            </div>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
-              gap: "2rem"
-            }}>
-              {testimonials.map((testimonial) => (
-                <div
-                  key={testimonial.name}
-                  style={{
-                    backgroundColor: "var(--card)",
-                    padding: "2rem",
-                    borderRadius: "0.5rem",
-                    border: "1px solid var(--border)",
-                    position: "relative"
-                  }}
-                >
-                  <div style={{ marginBottom: "1.5rem" }}>
-                    <Avatar style={{ height: "3rem", width: "3rem", border: "2px solid var(--primary)" }}>
-                      <AvatarFallback style={{ backgroundColor: "var(--secondary)" }}>{testimonial.avatar}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <p style={{ fontStyle: "italic", marginBottom: "1.5rem", color: "var(--muted-foreground)" }}>"{testimonial.quote}"</p>
-                  <div>
-                    <p style={{ fontWeight: 500, color: "rgb(var(--foreground-rgb))" }}>{testimonial.name}</p>
-                    <p style={{ fontSize: "0.875rem", lineHeight: "1.25rem", color: "var(--muted-foreground)" }}>{testimonial.title}</p>
-                  </div>
+                  <p style={{ color: "var(--muted-foreground)", fontSize: "0.875rem" }}>{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -526,7 +386,7 @@ const Index = () => {
 
             <div style={{
               display: "grid",
-              gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
               gap: "2rem",
               maxWidth: "64rem",
               margin: "0 auto"
@@ -541,7 +401,13 @@ const Index = () => {
                     border: `1px solid ${plan.highlight ? "var(--primary)" : "var(--border)"}`,
                     boxShadow: plan.highlight ? "0 10px 15px -3px rgba(1, 65, 255, 0.2), 0 4px 6px -2px rgba(1, 65, 255, 0.1)" : "none",
                     position: "relative",
-                    zIndex: plan.highlight ? 10 : "auto"
+                    zIndex: plan.highlight ? 10 : "auto",
+                    aspectRatio: "1/1",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    textAlign: "center"
                   }}
                 >
                   {plan.highlight && (
@@ -562,209 +428,31 @@ const Index = () => {
                       Most Popular
                     </div>
                   )}
-                  <h3 style={{ fontSize: "1.25rem", fontWeight: 500, marginBottom: "0.5rem", color: "rgb(var(--foreground-rgb))" }}>{plan.name}</h3>
-                  <div style={{ marginBottom: "1rem" }}>
-                    <span style={{ fontSize: "2.25rem", lineHeight: "2.5rem", fontWeight: 700, color: "rgb(var(--foreground-rgb))" }}>{plan.price}</span>
+                  <div>
+                    <h3 style={{ fontSize: "1.25rem", fontWeight: 500, marginBottom: "0.5rem", color: "rgb(var(--foreground-rgb))" }}>{plan.name}</h3>
+                    <div style={{ marginBottom: "1rem" }}>
+                      <span style={{ fontSize: "2rem", lineHeight: "2.5rem", fontWeight: 700, color: "rgb(var(--foreground-rgb))" }}>{plan.price}</span>
+                    </div>
+                    <p style={{ color: "var(--muted-foreground)", marginBottom: "1.5rem", fontSize: "0.875rem" }}>{plan.description}</p>
+                    <ul style={{ marginBottom: "1rem" }}>
+                      {plan.features.map((feature) => (
+                        <li key={feature} style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem", justifyContent: "center" }}>
+                          <Check style={{ height: "1rem", width: "1rem", color: "var(--primary)", marginRight: "0.5rem", flexShrink: 0 }} />
+                          <span style={{ fontSize: "0.75rem", color: "rgb(var(--foreground-rgb))" }}>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <p style={{ color: "var(--muted-foreground)", marginBottom: "1.5rem" }}>{plan.description}</p>
-                  <ul style={{ marginBottom: "2rem" }}>
-                    {plan.features.map((feature) => (
-                      <li key={feature} style={{ display: "flex", alignItems: "center", marginBottom: "0.75rem" }}>
-                        <Check style={{ height: "1.25rem", width: "1.25rem", color: "var(--primary)", marginRight: "0.5rem", flexShrink: 0 }} />
-                        <span style={{ fontSize: "0.875rem", color: "rgb(var(--foreground-rgb))" }}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
                   <Button
                     asChild
                     variant={plan.buttonVariant}
-                    style={{ width: "100%", backgroundColor: plan.highlight ? "var(--primary)" : "transparent", borderColor: "var(--primary)" }}
+                    style={{ width: "80%", backgroundColor: plan.highlight ? "var(--primary)" : "transparent", borderColor: "var(--primary)", fontSize: "0.875rem", padding: "0.5rem" }}
                     size="lg"
                   >
                     <a href={plan.path}>{plan.buttonText}</a>
                   </Button>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Try Now Section */}
-        <div id="try-now" style={{
-          padding: "4rem 0",
-          backgroundImage: "var(--secondary-glow)"
-        }}>
-          <div style={{
-            width: "100%",
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: "0 1rem"
-          }}>
-            <div style={{
-              maxWidth: "48rem",
-              margin: "0 auto 4rem",
-              textAlign: "center"
-            }}>
-              <h2 style={{
-                fontSize: "1.875rem",
-                lineHeight: "2.25rem",
-                fontWeight: 700,
-                marginBottom: "1rem",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                color: "transparent",
-                backgroundImage: "linear-gradient(to right, var(--violet-400), var(--cyan-300))"
-              }}>
-                Try DorfNewAI For Free
-              </h2>
-              <p style={{
-                fontSize: "1.125rem",
-                color: "var(--muted-foreground)"
-              }}>
-                Generate one piece of content without signing up
-              </p>
-            </div>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
-              gap: "2rem",
-              maxWidth: "64rem",
-              margin: "0 auto"
-            }}>
-              <Card style={{ width: "100%", backgroundColor: "var(--card)", borderColor: "var(--border)" }}>
-                <CardHeader style={{ marginBottom: "0.25rem" }}>
-                  <CardTitle style={{ fontSize: "1.5rem", fontWeight: 600, lineHeight: 1, letterSpacing: "-0.025em", color: "rgb(var(--foreground-rgb))" }}>Create Your Content</CardTitle>
-                  <CardDescription style={{ color: "var(--muted-foreground)" }}>
-                    Create one AI-generated piece of content without signing up
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleGenerate} style={{ marginTop: "1rem" }}>
-                    <div style={{ marginBottom: "0.5rem" }}>
-                      <Label htmlFor="contentType" style={{ color: "rgb(var(--foreground-rgb))" }}>Content Type</Label>
-                      <Select 
-                        value={contentType} 
-                        onValueChange={setContentType}
-                      >
-                        <SelectTrigger style={{ backgroundColor: "var(--card)", borderColor: "var(--border)", color: "rgb(var(--foreground-rgb))" }}>
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                        <SelectContent style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}>
-                          <SelectItem value="image" style={{ color: "rgb(var(--foreground-rgb))" }}>Image</SelectItem>
-                          <SelectItem value="video" style={{ color: "rgb(var(--foreground-rgb))" }}>Video</SelectItem>
-                          <SelectItem value="music" style={{ color: "rgb(var(--foreground-rgb))" }}>Music</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div style={{ marginBottom: "1rem" }}>
-                      <Label htmlFor="prompt" style={{ color: "rgb(var(--foreground-rgb))" }}>Describe what you want to create</Label>
-                      <Textarea 
-                        id="prompt" 
-                        placeholder="E.g., A futuristic cityscape at sunset with flying cars" 
-                        rows={5}
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                        style={{ resize: "none", backgroundColor: "var(--card)", borderColor: "var(--border)", color: "rgb(var(--foreground-rgb))" }}
-                      />
-                    </div>
-                    <Button type="submit" style={{ width: "100%", backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }} disabled={isLoading}>
-                      {isLoading ? "Generating..." : "Generate Now"}
-                    </Button>
-                  </form>
-                </CardContent>
-                <CardFooter>
-                  <p style={{
-                    fontSize: "0.875rem",
-                    color: "var(--muted-foreground)",
-                    textAlign: "center",
-                    width: "100%"
-                  }}>
-                    This is a one-time free trial. <Link to="/signup" style={{ color: "var(--primary)" }}>Sign up</Link> for unlimited access.
-                  </p>
-                </CardFooter>
-              </Card>
-              
-              <Card style={{ width: "100%", flex: 1, backgroundColor: "var(--card)", borderColor: "var(--border)" }}>
-                <CardHeader>
-                  <CardTitle style={{ color: "rgb(var(--foreground-rgb))" }}>Result</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "16rem",
-                      gap: "1rem"
-                    }}>
-                      <div style={{
-                        width: "2.5rem",
-                        height: "2.5rem",
-                        border: "4px solid var(--primary)",
-                        borderTopColor: "transparent",
-                        borderRadius: "9999px",
-                        animation: "spin 1s linear infinite"
-                      }}></div>
-                      <p style={{ color: "var(--muted-foreground)" }}>Generating your content...</p>
-                    </div>
-                  ) : result ? (
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "1rem"
-                    }}>
-                      {contentType === "image" ? (
-                        <img 
-                          src={result} 
-                          alt="AI-generated content" 
-                          style={{
-                            width: "100%",
-                            height: "auto",
-                            maxHeight: "400px",
-                            objectFit: "contain",
-                            borderRadius: "0.375rem",
-                            border: "1px solid var(--border)"
-                          }}
-                        />
-                      ) : (
-                        <div style={{
-                          backgroundColor: "rgba(var(--secondary), 0.5)",
-                          width: "100%",
-                          height: "12rem",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "0.375rem",
-                          border: "1px solid var(--border)"
-                        }}>
-                          <p style={{ color: "rgb(var(--foreground-rgb))" }}>Content generated! (Preview not available in demo)</p>
-                        </div>
-                      )}
-                      <div style={{ textAlign: "center" }}>
-                        <p style={{ marginBottom: "1rem", color: "var(--muted-foreground)" }}>Like what you see? Sign up for unlimited generations!</p>
-                        <Button asChild>
-                          <Link to="/signup" style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}>Create Account</Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "16rem",
-                      textAlign: "center",
-                      gap: "0.5rem"
-                    }}>
-                      <p style={{ color: "var(--muted-foreground)" }}>Fill out the form and click Generate to see your AI creation</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
@@ -882,7 +570,8 @@ const Index = () => {
               }}>
                 <span style={{ position: "absolute", width: "1px", height: "1px", padding: 0, margin: "-1px", overflow: "hidden", clip: "rect(0, 0, 0, 0)", whiteSpace: "nowrap", borderWidth: 0 }}>GitHub</span>
                 <svg style={{ height: "1.5rem", width: "1.5rem", fill: "currentColor" }} viewBox="0 0 24 24" aria-hidden="true">
-                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path>
+                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705
+                  .115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"></path>
                 </svg>
               </a>
             </div>
