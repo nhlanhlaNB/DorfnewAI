@@ -1,46 +1,73 @@
 "use client";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  CardTitle,
-  CardDescription,
-  CardHeader,
-  CardContent,
-  CardFooter,
-  Card,
-} from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/../../app/src2/components/ui/use-toast";
+import { supabase } from "@/../../New/Final DorfnewAI/DorfnewAI/backend/lib/supabase";
 
-const SignUp = () => {
+const Signup = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      console.log("Signing up with:", { email, password, username });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to DorfNewAI",
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: {
+          data: { name },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
-      router.push("/");
+
+      console.log("Signup response:", { authData, authError });
+
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw authError;
+      }
+
+      if (!authData.user) {
+        throw new Error("User creation failed");
+      }
+
+      // Check if email confirmation is required
+      if (!authData.user.email_confirmed_at) {
+        toast({
+          title: "Check your email",
+          description: "Please confirm your email to complete signup.",
+        });
+      }
+
+      // Insert additional user data into the user table
+      const { error: userError } = await supabase.from("user").insert({
+        id: authData.user.id,
+        email: normalizedEmail,
+        name,
+        created_at: new Date().toISOString(),
+      });
+
+      if (userError) {
+        console.error("Insert error:", userError);
+        throw userError;
+      }
+
+      router.push("/login");
     } catch (error) {
+      console.error("Signup error:", error);
       toast({
-        title: "Sign up failed",
-        description: "Please try again later.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred during signup",
         variant: "destructive",
       });
     } finally {
@@ -49,79 +76,75 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-background to-secondary/30">
-      <div className="absolute top-6 left-6">
-        <Link href="/" className="text-2xl font-bold ai-gradient-text">
+    <div className="auth-page">
+      <div className="auth-back">
+        <Link href="/" className="logo">
           DorfNewAI
         </Link>
       </div>
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
-          <CardDescription className="text-center">
-            Enter your details below to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-         d
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                placeholder="johndoe"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Sign up"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-center text-muted-foreground">
-            By creating an account, you agree to our
-            <Link href="/terms" className="underline underline-offset-4 hover:text-primary mx-1">
-              Terms of Service
-            </Link>
-            and
-            <Link href="/privacy" className="underline underline-offset-4 hover:text-primary ml-1">
-              Privacy Policy
-            </Link>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>Create Account</h1>
+            <p>Sign up with DorfNewAI</p>
           </div>
-          <div className="text-sm text-center text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
-              Sign in
-            </Link>
+          <div className="auth-content">
+            <form id="signup-form" className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="name">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Your Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn btn-primary glow-button w-full"
+                id="signup-button"
+                disabled={isLoading}
+              >
+                <span id="button-text">{isLoading ? "Creating account..." : "Sign up"}</span>
+                {isLoading && <span id="button-loader" className="button-loader"></span>}
+              </button>
+            </form>
           </div>
-        </CardFooter>
-      </Card>
+          <div className="auth-footer">
+            <p>
+              Already have an account? <Link href="/login">Sign in</Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default SignUp;
+export default Signup;

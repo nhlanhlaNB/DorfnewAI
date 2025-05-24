@@ -29,7 +29,7 @@ export default function RedirectToLanding() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/src');
+    router.replace('/src2');
   }, [router]);
 
   return null; // Optionally show a loading spinner

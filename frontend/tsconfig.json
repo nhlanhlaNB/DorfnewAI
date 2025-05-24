@@ -3,13 +3,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "app/src/*"
+        "app/*"
       ],
       "@/components/*": [
-        "app/src/components/*"
-      ],
-      "@/hooks/*": [
-        "app/src/hooks/*"
+        "components/*"
       ]
     },
     "target": "es5",
