@@ -5,7 +5,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px; /* Ensures spacing between elements */
+  gap: 20px;
 }
 
 .searchContainer {
@@ -91,7 +91,7 @@
 
 .userName {
   display: inline-block;
-  max-width: 150px; /* Adjust based on your needs */
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -101,7 +101,7 @@
 
 .userContainer {
   display: flex;
-  min-width: 0; /* Allows text truncation */
+  min-width: 0;
 }
 
 .userGreeting:hover {
@@ -109,19 +109,53 @@
   transform: scale(1.05);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .header {
     flex-direction: column;
     gap: 15px;
+    padding-top: 60px; /* Space for hamburger button */
   }
-  
+
+  .searchContainer {
+    max-width: 90%; /* Slightly smaller container */
+  }
+
+  .searchBar {
+    font-size: 13px; /* Smaller font */
+    padding: 6px 12px; /* Reduced padding */
+  }
+
   .userGreeting {
     width: 100%;
     justify-content: center;
   }
-  
+
   .userName {
     max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding-top: 50px; /* Slightly less space for smaller devices */
+  }
+
+  .searchContainer {
+    max-width: 85%; /* Even smaller container */
+  }
+
+  .searchBar {
+    font-size: 11px; /* Even smaller font */
+    padding: 5px 8px; /* Further reduced padding */
+  }
+
+  .uploadButton {
+    font-size: 18px; /* Smaller icon */
+    padding: 6px;
+  }
+
+  .generateButton {
+    padding: 6px 16px; /* Smaller button */
+    font-size: 12px; /* Smaller text */
   }
 }

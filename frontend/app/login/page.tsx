@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
-import { supabase } from "@/../../New/Final DorfnewAI/DorfnewAI/backend/lib/supabase";
+import { supabase } from "@/../../backend/lib/supabase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
