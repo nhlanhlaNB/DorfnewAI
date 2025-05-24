@@ -65,7 +65,25 @@
 .mediaTitle {
   font-size: 12px;
   color: #b0b0c0;
-  margin: 0;
+  margin: 0 0 10px 0;
+}
+
+.downloadButton {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #00ddeb;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.downloadButton:hover {
+  background: #7b68ee;
+  transform: scale(1.05);
 }
 
 .closeButton {
@@ -193,6 +211,11 @@
     font-size: 10px;
   }
 
+  .downloadButton {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
   .subscriptionsGrid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 10px;
@@ -237,6 +260,11 @@
   .closeButton {
     padding: 5px 10px;
     font-size: 10px;
+  }
+
+  .downloadButton {
+    padding: 4px 8px;
+    font-size: 9px;
   }
 
   .subscriptionsGrid {

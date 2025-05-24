@@ -147,12 +147,22 @@ export default function MainContent() {
                   />
                 )}
                 {media.type === "image" && (
-                  <img
-                    className={styles.mediaContent}
-                    src={media.src}
-                    alt={media.title}
-                    title={media.title}
-                  />
+                  <>
+                    <img
+                      className={styles.mediaContent}
+                      src={media.src}
+                      alt={media.title}
+                      title={media.title}
+                    />
+                    <a
+                      href={media.src}
+                      download={`${media.title}.jpg`}
+                      className={styles.downloadButton}
+                      title={`Download ${media.title}`}
+                    >
+                      Download
+                    </a>
+                  </>
                 )}
                 {media.type === "audio" && (
                   <audio
