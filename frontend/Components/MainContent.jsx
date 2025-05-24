@@ -1,17 +1,19 @@
 "use client";
 import styles from "../styles/MainContent.module.css";
 import React, { useState } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 export default function MainContent() {
+  const router = useRouter();
   const topics = [
     { name: "Sports", color: "#ff6b6b" },
     { name: "Wild Life", color: "#4ecdc4" },
     { name: "Music", color: "#7b68ee" },
     { name: "Videos", color: "#ff8e53" },
+    { name: "Images", color: "#00ddeb" },
   ];
 
-  // Mock subscription data (replace with real data from your backend)
+  // Mock subscription data
   const subscriptions = [
     {
       channelName: "Nhlanhla’s AI Sports Clips",
@@ -36,12 +38,79 @@ export default function MainContent() {
     },
   ];
 
+  // Dummy media data (3 items per category)
+  const dummyMedia = {
+    Videos: [
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/1519477/1519477-hd_1920_1080_30fps.mp4",
+        title: "Nature Video 1",
+      },
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/3209298/3209298-hd_1920_1080_25fps.mp4",
+        title: "Nature Video 2",
+      },
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_30fps.mp4",
+        title: "Nature Video 3",
+      },
+    ],
+    Images: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        title: "Wildlife Image 1",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1470770841072-3d795943367e",
+        title: "Wildlife Image 2",
+      },
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1501854140801-50d01608902b",
+        title: "Wildlife Image 3",
+      },
+    ],
+    Music: [
+      {
+        type: "audio",
+        src: "https://cdn.pixabay.com/audio/2023/03/20/audio_7c92e8b6df.mp3",
+        title: "Instrumental Track 1",
+      },
+      {
+        type: "audio",
+        src: "https://cdn.pixabay.com/audio/2022/08/02/audio_34488e04fd.mp3",
+        title: "Instrumental Track 2",
+      },
+      {
+        type: "audio",
+        src: "https://cdn.pixabay.com/audio/2023/10/25/audio_508e9b4631.mp3",
+        title: "Instrumental Track 3",
+      },
+    ],
+  };
+
   const [subscribedChannels, setSubscribedChannels] = useState(subscriptions);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleUnsubscribe = (channelName) => {
     setSubscribedChannels(subscribedChannels.filter((sub) => sub.channelName !== channelName));
   };
-  const router = useRouter()
+
+  const handleTopicClick = (topicName) => {
+    if (dummyMedia[topicName]) {
+      setSelectedCategory(topicName);
+    } else {
+      setSelectedCategory(null);
+    }
+  };
+
+  const closeMedia = () => {
+    setSelectedCategory(null);
+  };
 
   return (
     <div className={styles.mainContent}>
@@ -54,12 +123,54 @@ export default function MainContent() {
               key={topic.name}
               className={styles.topicCard}
               style={{ backgroundColor: topic.color }}
+              onClick={() => handleTopicClick(topic.name)}
             >
               {topic.name}
             </div>
           ))}
         </div>
       </section>
+
+      {/* Media Display Section */}
+      {selectedCategory && dummyMedia[selectedCategory] && (
+        <section className={styles.mediaDisplay}>
+          <h3>{selectedCategory}</h3>
+          <div className={styles.mediaGrid}>
+            {dummyMedia[selectedCategory].map((media, index) => (
+              <div key={index} className={styles.mediaCard}>
+                {media.type === "video" && (
+                  <video
+                    className={styles.mediaContent}
+                    controls
+                    src={media.src}
+                    title={media.title}
+                  />
+                )}
+                {media.type === "image" && (
+                  <img
+                    className={styles.mediaContent}
+                    src={media.src}
+                    alt={media.title}
+                    title={media.title}
+                  />
+                )}
+                {media.type === "audio" && (
+                  <audio
+                    className={styles.mediaContent}
+                    controls
+                    src={media.src}
+                    title={media.title}
+                  />
+                )}
+                <p className={styles.mediaTitle}>{media.title}</p>
+              </div>
+            ))}
+          </div>
+          <button className={styles.closeButton} onClick={closeMedia}>
+            Close
+          </button>
+        </section>
+      )}
 
       {/* Your Subscriptions Section */}
       <section className={styles.yourSubscriptions}>
@@ -95,4 +206,3 @@ export default function MainContent() {
     </div>
   );
 }
-
