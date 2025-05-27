@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
-import { supabase } from "@/../../New/Final DorfnewAI/DorfnewAI/backend/lib/supabase";
+import { supabase } from "@/../../backend/lib/supabase";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -50,7 +50,7 @@ const Signup = () => {
       }
 
       // Insert additional user data into the user table
-      const { error: userError } = await supabase.from("user").insert({
+      const { error: userError } = await supabase.from("app_user").insert({
         id: authData.user.id,
         email: normalizedEmail,
         name,

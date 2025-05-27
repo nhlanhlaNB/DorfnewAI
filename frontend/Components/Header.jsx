@@ -16,7 +16,7 @@ export default function Header() {
         
         if (user) {
           const { data, error } = await supabase
-            .from('user')
+            .from('app_user')
             .select('name')
             .eq('email', user.email)
             .single();

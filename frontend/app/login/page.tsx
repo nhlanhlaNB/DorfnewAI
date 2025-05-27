@@ -1,3 +1,4 @@
+// app/login/page.tsx (or wherever your Login component is located)
 "use client";
 import { useState } from "react";
 import Link from "next/link";
@@ -9,6 +10,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null); // State to store the user's name
   const router = useRouter();
   const { toast } = useToast();
 
@@ -45,7 +47,24 @@ const Login = () => {
         throw new Error("Email not confirmed");
       }
 
-      toast({ title: "Success", description: "Logged in successfully" });
+      // Fetch user name from app_user table
+      const { data: userProfile, error: profileError } = await supabase
+        .from("app_user")
+        .select("name")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (profileError || !userProfile) {
+        throw new Error("Failed to fetch user profile: " + (profileError?.message || "No profile found"));
+      }
+
+      // Store the name in state
+      setUserName(userProfile.name);
+
+      toast({
+        title: "Success",
+        description: `Welcome back, ${userProfile.name}!`,
+      });
       router.push("/dashboard");
 
     } catch (error) {
@@ -108,7 +127,7 @@ const Login = () => {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h1>Welcome back</h1>
+            <h1>Welcome back{userName ? `, ${userName}` : ""}</h1>
             <p>Enter your credentials to sign in to your account</p>
           </div>
 

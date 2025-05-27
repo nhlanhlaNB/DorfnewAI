@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from "@/../../New/Final DorfnewAI/DorfnewAI/backend/lib/supabase";
+import { supabase } from "@/../../backend/lib/supabase";
 import Sidebar from '../../components/Sidebar';
 import Header from "../../components/Header";
 import MainContent from "../../components/MainContent";
