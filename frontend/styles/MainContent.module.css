@@ -7,24 +7,25 @@
 }
 
 .exploreTopics h2,
-.yourSubscriptions h2 {
-  font-size: 24px;
+.yourSubscriptions h2,
+.mediaDisplay h3 {
+  font-size: 22px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #ffffff;
 }
 
 .topicsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
 }
 
 .topicCard {
-  padding: 20px;
-  border-radius: 12px;
+  padding: 15px;
+  border-radius: 10px;
   text-align: center;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #ffffff;
   transition: all 0.3s ease;
@@ -32,24 +33,92 @@
 }
 
 .topicCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mediaDisplay {
+  margin-top: 30px;
+}
+
+.mediaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.mediaCard {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.mediaContent {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.mediaTitle {
+  font-size: 12px;
+  color: #b0b0c0;
+  margin: 0 0 10px 0;
+}
+
+.downloadButton {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #00ddeb;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.downloadButton:hover {
+  background: #7b68ee;
+  transform: scale(1.05);
+}
+
+.closeButton {
+  padding: 6px 12px;
+  background: #ff6b6b;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 15px auto 0;
+}
+
+.closeButton:hover {
+  background: #ff8e53;
+  transform: scale(1.05);
 }
 
 .yourSubscriptions {
-  margin-top: 40px;
+  margin-top: 30px;
 }
 
 .subscriptionsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
 }
 
 .subscriptionCard {
-  padding: 20px;
+  padding: 15px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -62,31 +131,31 @@
 }
 
 .channelInfo h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: #ffffff;
 }
 
 .creator {
-  font-size: 14px;
+  font-size: 12px;
   color: #b0b0c0;
   margin: 5px 0;
 }
 
 .preview {
-  font-size: 12px;
+  font-size: 10px;
   color: #b0b0c0;
   margin: 5px 0 0;
 }
 
 .unsubscribeButton {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: #ff6b6b;
   color: #ffffff;
   border: none;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -98,8 +167,107 @@
 }
 
 .noSubscriptions {
-  font-size: 16px;
+  font-size: 14px;
   color: #b0b0c0;
   text-align: center;
-  padding: 20px;
+  padding: 15px;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 20px;
+  }
+
+  .exploreTopics h2,
+  .yourSubscriptions h2,
+  .mediaDisplay h3 {
+    font-size: 18px;
+  }
+
+  .topicsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  .topicCard {
+    padding: 12px;
+    font-size: 12px;
+  }
+
+  .mediaGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .mediaCard {
+    padding: 10px;
+  }
+
+  .mediaContent {
+    max-height: 100px;
+  }
+
+  .mediaTitle {
+    font-size: 10px;
+  }
+
+  .downloadButton {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .subscriptionsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .subscriptionCard {
+    padding: 12px;
+  }
+
+  .channelInfo h3 {
+    font-size: 14px;
+  }
+
+  .creator,
+  .preview {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 15px;
+  }
+
+  .topicsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+
+  .topicCard {
+    padding: 10px;
+    font-size: 10px;
+  }
+
+  .mediaGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .mediaContent {
+    max-height: 80px;
+  }
+
+  .closeButton {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .downloadButton {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  .subscriptionsGrid {
+    grid-template-columns: 1fr;
+  }
 }

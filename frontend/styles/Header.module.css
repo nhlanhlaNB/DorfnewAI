@@ -3,8 +3,9 @@
   padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .searchContainer {
@@ -19,9 +20,9 @@
   backdrop-filter: blur(10px);
 }
 
-.uploadButton {            /*  YOU MUST FIX THIS SO THAT THE ICON APPEARS  */
+.uploadButton {
   background: none;
-  border: white;
+  border: none;
   padding: 10px;
   color: #f5f5fa;
   font-size: 24px;
@@ -39,7 +40,7 @@
 }
 
 .fileInput {
-  display: none; /* Hide the default file input */
+  display: none;
 }
 
 .searchBar {
@@ -72,4 +73,89 @@
   background: linear-gradient(90deg, #00ddeb, #7b68ee);
   transform: scale(1.05);
 }
-  
+
+.userGreeting {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #f5f5fa;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 15px;
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.userName {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 5px;
+  font-weight: 600;
+}
+
+.userContainer {
+  display: flex;
+  min-width: 0;
+}
+
+.userGreeting:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 60px; /* Space for hamburger button */
+  }
+
+  .searchContainer {
+    max-width: 90%; /* Slightly smaller container */
+  }
+
+  .searchBar {
+    font-size: 13px; /* Smaller font */
+    padding: 6px 12px; /* Reduced padding */
+  }
+
+  .userGreeting {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .userName {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding-top: 50px; /* Slightly less space for smaller devices */
+  }
+
+  .searchContainer {
+    max-width: 85%; /* Even smaller container */
+  }
+
+  .searchBar {
+    font-size: 11px; /* Even smaller font */
+    padding: 5px 8px; /* Further reduced padding */
+  }
+
+  .uploadButton {
+    font-size: 18px; /* Smaller icon */
+    padding: 6px;
+  }
+
+  .generateButton {
+    padding: 6px 16px; /* Smaller button */
+    font-size: 12px; /* Smaller text */
+  }
+}
