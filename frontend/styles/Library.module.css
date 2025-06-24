@@ -1,139 +1,235 @@
-.pageWrapper {
-    background: #2a2a40;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    color: #ffffff;
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #1e1e2f;
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 30px;
+  margin-top: 80px; /* Space for header */
+}
+
+.headerSection {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.pageSubtitle {
+  font-size: 1rem;
+  color: #b0b0c0;
+  margin-bottom: 30px;
+}
+
+.tabsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.tabButton {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.activeTab {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.contentCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.contentCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mediaPreview {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.audioContainer {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.audioPlayer {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.audioVisualizer {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(90deg, #7b68ee, #00ddeb);
+  border-radius: 5px;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.contentInfo {
+  padding: 15px;
+}
+
+.contentTitle {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contentActions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.actionButton, .deleteButton {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.actionButton {
+  background: #00ddeb;
+  color: white;
+}
+
+.actionButton:hover {
+  background: #7b68ee;
+}
+
+.deleteButton {
+  background: #ff6b6b;
+  color: white;
+}
+
+.deleteButton:hover {
+  background: #ff8e53;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 50px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  color: #7b68ee;
+  margin-bottom: 20px;
+}
+
+.generateButton {
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.generateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.footer {
+  padding: 20px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.footerText {
+  color: #b0b0c0;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .contentGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
   
-  .header {
-    background: #2a2a40;
-    padding: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  
-  .closeButton {
-    background: transparent;
-    border: none;
-    color: #b0b0c0;
-    font-size: 2rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .closeButton:hover {
-    color: #ffffff;
-    transform: scale(1.1);
-  }
-  
-  .main {
-    flex: 1;
-    padding: 40px 20px;
-    text-align: center;
-  }
-  
-  .pageTitle {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 10px;
-  }
-  
-  .pageSubtitle {
-    font-size: 1.2rem;
-    color: #b0b0c0;
-    margin-bottom: 40px;
-  }
-  
-  .contentContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    padding: 30px;
-    width: 100%;
-    max-width: 300px;
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  .cardTitle {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 10px;
-  }
-  
-  .cardDescription {
-    font-size: 1rem;
-    color: #b0b0c0;
-    margin-bottom: 20px;
-  }
-  
-  .actionButton {
-    padding: 10px 25px;
-    background: linear-gradient(90deg, #7b68ee, #00ddeb);
-    color: #ffffff;
-    border: none;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
-  }
-  
-  .actionButton:hover {
-    background: linear-gradient(90deg, #00ddeb, #7b68ee);
-    transform: scale(1.05);
-  }
-  
-  .footer {
-    background: #2a2a40;
-    padding: 20px;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .footer p {
-    color: #ffffff;
+  .tabButton {
+    padding: 10px 15px;
     font-size: 0.9rem;
   }
-  
-  .footer i {
-    margin-right: 5px;
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: 15px;
   }
   
-  @media (max-width: 768px) {
-    .contentContainer {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .card {
-      max-width: 100%;
-    }
-  
-    .pageTitle {
-      font-size: 2rem;
-    }
-  
-    .pageSubtitle {
-      font-size: 1rem;
-    }
+  .tabsContainer {
+    flex-direction: column;
+    gap: 10px;
   }
+  
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}

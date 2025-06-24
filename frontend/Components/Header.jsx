@@ -1,19 +1,20 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/../../New/Final DorfnewAI/DorfnewAI/backend/lib/supabase";
+import { supabase } from "@/../../backend/lib/supabase";
 import styles from "../styles/Header.module.css";
 
-export default function Header() {
+export default function Header({ onGenerateClick }) {
   const fileInputRef = useRef(null);
   const [userName, setUserName] = useState(null);
+  const searchInputRef = useRef(null);
 
   // Fetch user name from Supabase users table on component mount
- useEffect(() => {
+  useEffect(() => {
     const fetchUser = async () => {
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError) throw authError;
-        
+
         if (user) {
           const { data, error } = await supabase
             .from('app_user')
@@ -21,20 +22,21 @@ export default function Header() {
             .eq('email', user.email)
             .single();
 
+          if (error) throw error;
+
           const displayName = data?.name || user.email?.split('@')[0] || 'User';
           setUserName(displayName);
         } else {
           setUserName('User');
         }
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.error("Error fetching user:", error.message);
         setUserName('User');
       }
     };
 
     fetchUser();
   }, []);
-
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -52,29 +54,24 @@ export default function Header() {
           method: "POST",
           body: formData,
         });
+        if (!response.ok) throw new Error("File upload failed");
         const data = await response.json();
-        console.log("Generated content:", data);
+        console.log("Generated content from file:", data);
       } catch (error) {
-        console.error("Error generating from file:", error);
+        console.error("Error generating from file:", error.message);
       }
     }
   };
 
-  const handleGenerate = async () => {
-    if (typeof document !== 'undefined') {
-      const input = document.querySelector("input[type='text']");
-      const prompt = input ? input.value : '';
-      try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, type: "video" }),
-        });
-        const data = await response.json();
-        console.log("Generated content from text:", data);
-      } catch (error) {
-        console.error("Error generating from text:", error);
-      }
+  const handleGenerate = () => {
+    const prompt = searchInputRef.current?.value.trim() || "";
+    console.log("Generate clicked with prompt:", prompt); // Debugging
+
+    // Call the parent component's generation handler via ref
+    if (onGenerateClick?.current) {
+      onGenerateClick.current(prompt);
+    } else {
+      console.error("onGenerateClick ref is not defined");
     }
   };
 
@@ -97,6 +94,7 @@ export default function Header() {
         />
         <input
           type="text"
+          ref={searchInputRef}
           placeholder="Generate Videos, Images, Music — Describe or Upload!"
           className={styles.searchBar}
         />
