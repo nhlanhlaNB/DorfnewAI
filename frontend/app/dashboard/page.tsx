@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/../../backend/lib/supabase";
 import Sidebar from '../../components/Sidebar';
@@ -10,6 +10,7 @@ import styles from "../../styles/Home.module.css"
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const generateClickRef = useRef(null); // Create ref for onGenerateClick
 
   // Check authentication status on component mount
   useEffect(() => {
@@ -39,8 +40,8 @@ export default function Home() {
     <div className={styles.container}>
       <Sidebar />
       <div className={styles.mainArea}>
-        <Header />
-        <MainContent />
+        <Header onGenerateClick={generateClickRef} />
+        <MainContent onGenerateClick={generateClickRef} />
       </div>
     </div>
   );
