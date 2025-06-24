@@ -1,18 +1,34 @@
-// app/login/page.tsx (or wherever your Login component is located)
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
-import { supabase } from "@/../../backend/lib/supabase";
+import { 
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  User,
+  onAuthStateChanged
+} from "firebase/auth";
+import { auth } from "@/../../backend/lib/firebase"; // Adjust path to your firebase config
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/../../backend/lib/firebase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null); // State to store the user's name
+  const [userName, setUserName] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  // Track authentication state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,71 +36,61 @@ const Login = () => {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
+      
+      // Firebase authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        normalizedEmail,
+        password
+      );
+      
+      const user = userCredential.user;
+      console.log("Login response:", user);
 
-      // Attempt login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-
-      console.log("Login response:", { data, error });
-
-      if (error) {
-        throw error;
+      // Check if email is verified
+      if (!user.emailVerified) {
+        toast({
+          title: "Email not verified",
+          description: "Please verify your email before logging in",
+          variant: "destructive"
+        });
+        return;
       }
 
-      // Verify session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("No session created");
-
-      // Check email confirmation
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        throw new Error("Failed to fetch user data");
+      // Fetch user name from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("User profile not found");
       }
 
-      if (!userData.user.email_confirmed_at) {
-        throw new Error("Email not confirmed");
-      }
-
-      // Fetch user name from app_user table
-      const { data: userProfile, error: profileError } = await supabase
-        .from("app_user")
-        .select("name")
-        .eq("id", userData.user.id)
-        .single();
-
-      if (profileError || !userProfile) {
-        throw new Error("Failed to fetch user profile: " + (profileError?.message || "No profile found"));
-      }
-
-      // Store the name in state
-      setUserName(userProfile.name);
+      const userData = userDoc.data();
+      const name = userData?.displayName || userData?.name || "User";
+      setUserName(name);
 
       toast({
         title: "Success",
-        description: `Welcome back, ${userProfile.name}!`,
+        description: `Welcome back, ${name}!`,
       });
       router.push("/dashboard");
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Full login error:", error);
 
       let errorMessage = "Login failed";
-      if (error instanceof Error) {
-        switch (error.message) {
-          case "Invalid login credentials":
-            errorMessage = "Incorrect email or password";
-            break;
-          case "Email not confirmed":
-            errorMessage = "Please check your email to confirm your account";
-            break;
-          case "No session created":
-            errorMessage = "Session creation failed";
-            break;
-          default:
-            errorMessage = error.message;
-        }
+      switch (error.code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+        case "auth/user-not-found":
+          errorMessage = "Incorrect email or password";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "Account temporarily disabled. Try again later";
+          break;
+        case "auth/user-disabled":
+          errorMessage = "Account disabled";
+          break;
+        default:
+          errorMessage = error.message || "Authentication failed";
       }
 
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
@@ -96,21 +102,28 @@ const Login = () => {
   const resendConfirmation = async () => {
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      const { data, error } = await supabase.auth.resend({
-        type: "signup",
-        email: normalizedEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-      console.log("Resend confirmation response:", { data, error });
-      if (error) throw error;
-      toast({ title: "Success", description: "Confirmation email resent. Check your inbox or spam folder." });
-    } catch (error) {
+      
+      if (!currentUser) {
+        throw new Error("No authenticated user");
+      }
+
+      if (!currentUser.emailVerified) {
+        await sendEmailVerification(currentUser);
+        toast({ 
+          title: "Success", 
+          description: "Verification email resent. Check your inbox or spam folder." 
+        });
+      } else {
+        toast({
+          title: "Already Verified",
+          description: "Your email is already verified",
+        });
+      }
+    } catch (error: any) {
       console.error("Resend error:", error);
       toast({
         title: "Error",
-        description: "Failed to resend confirmation email. Ensure the email is correct.",
+        description: error.message || "Failed to resend verification email",
         variant: "destructive",
       });
     }
