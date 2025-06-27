@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/../../backend/lib/supabase";
+import { supabase } from "lib/supabase";
 import styles from "../../styles/Library.module.css";
 import Header from "../../components/Header";
 

@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/../../backend/lib/supabase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+// Make sure you export your initialized Firebase app instance from this file
+import { app } from "../lib/firebase";
 import styles from "../styles/Header.module.css";
 
 export default function Header({ onGenerateClick }) {
@@ -8,35 +11,37 @@ export default function Header({ onGenerateClick }) {
   const [userName, setUserName] = useState(null);
   const searchInputRef = useRef(null);
 
-  // Fetch user name from Supabase users table on component mount
+  // Firebase instances
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Fetch user name from Firestore on auth state change
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // "app_user" collection uses the user's email as the document ID
+          const userDocRef = doc(db, "app_user", user.email);
+          const userSnap = await getDoc(userDocRef);
 
-        if (user) {
-          const { data, error } = await supabase
-            .from('app_user')
-            .select('name')
-            .eq('email', user.email)
-            .single();
+          const displayName =
+            (userSnap.exists() && userSnap.data()?.name) ||
+            user.displayName ||
+            user.email.split("@")[0] ||
+            "User";
 
-          if (error) throw error;
-
-          const displayName = data?.name || user.email?.split('@')[0] || 'User';
           setUserName(displayName);
-        } else {
-          setUserName('User');
+        } catch (error) {
+          console.error("Error fetching user:", error.message);
+          setUserName("User");
         }
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-        setUserName('User');
+      } else {
+        setUserName("User");
       }
-    };
+    });
 
-    fetchUser();
-  }, []);
+    return () => unsubscribe();
+  }, [auth, db]);
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -65,7 +70,7 @@ export default function Header({ onGenerateClick }) {
 
   const handleGenerate = () => {
     const prompt = searchInputRef.current?.value.trim() || "";
-    console.log("Generate clicked with prompt:", prompt); // Debugging
+    console.log("Generate clicked with prompt:", prompt);
 
     // Call the parent component's generation handler via ref
     if (onGenerateClick?.current) {
