@@ -1,24 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-import { useToast } from "@/../../app/src2/components/ui/use-toast"; // Your path
-import {
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-import { auth, db } from "lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "lib/firebase";
+import { useToast } from "@/../../app/src2/components/ui/use-toast"; 
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-
   const router = useRouter();
   const { toast } = useToast();
+
+  // Handle auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push("/dashboard");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,40 +30,34 @@ export default function Login() {
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
-
-      // Sign in
-      const { user } = await signInWithEmailAndPassword(
-        auth,
-        normalizedEmail,
-        password
-      );
-
-      // Get name from Firestore (optional)
-      const userDoc = await getDoc(doc(db, "app_user", user.uid));
-      const name = userDoc.exists() ? userDoc.data()?.name : null;
-      if (name) setUserName(name);
-
+      await signInWithEmailAndPassword(auth, normalizedEmail, password);
+      
       toast({
         title: "Login successful",
-        description: name ? `Welcome back, ${name}` : "Redirecting...",
+        description: "Redirecting to your dashboard...",
       });
-
-      router.push("/dashboard");
+      
+      // The auth state change handler will handle the redirect
     } catch (error: any) {
       console.error("Login error:", error);
-
       let message = "Login failed. Please try again.";
+
       switch (error.code) {
-        case "auth/wrong-password":
-        case "auth/user-not-found":
         case "auth/invalid-credential":
-          message = "Incorrect email or password";
+          message = "Invalid email or password";
+          break;
+        case "auth/user-not-found":
+          message = "No account found with this email";
+          break;
+        case "auth/wrong-password":
+          message = "Incorrect password";
           break;
         case "auth/too-many-requests":
-          message = "Too many attempts. Try again later.";
+          message = "Too many attempts. Try again later or reset your password.";
           break;
-        default:
-          message = error.message || message;
+        case "auth/user-disabled":
+          message = "This account has been disabled";
+          break;
       }
 
       toast({
@@ -73,61 +71,72 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-back">
-        <Link href="/" className="logo">DorfNewAI</Link>
-      </div>
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold">Welcome back</h1>
+          <p className="mt-2 text-gray-600">Sign in to your account</p>
+        </div>
 
-      <div className="auth-container">
-        <div className="auth-card">
-          <div className="auth-header">
-            <h1>Welcome back{userName ? `, ${userName}` : ""}</h1>
-            <p>Enter your credentials to sign in</p>
-          </div>
-
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
               <input
                 id="email"
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="********"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
-              <div className="forgot-password">
-                <Link href="/forgot-password">Forgot password?</Link>
-              </div>
             </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary glow-button full-width"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-              {isLoading && <span className="button-loader" />}
-            </button>
-          </form>
-
-          <div className="auth-footer">
-            <p>
-              Don’t have an account? <Link href="/signup">Sign up</Link>
-            </p>
           </div>
+
+          <div className="flex items-center justify-end">
+            <Link href="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-500">
+              Forgot password?
+            </Link>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing in...
+              </>
+            ) : "Sign in"}
+          </button>
+        </form>
+
+        <div className="text-center text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign up
+          </Link>
         </div>
       </div>
     </div>

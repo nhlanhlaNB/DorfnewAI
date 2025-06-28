@@ -1,13 +1,16 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "lib/supabase";
+import { auth, db } from "lib/firebase";
+import { doc, getDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import styles from "../../styles/Library.module.css";
 import Header from "../../components/Header";
 
 export default function Library() {
   const router = useRouter();
   const [userName, setUserName] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [activeTab, setActiveTab] = useState("Images");
   const [libraryContent, setLibraryContent] = useState({
     Images: [],
@@ -16,60 +19,74 @@ export default function Library() {
   });
   const generateClickRef = useRef(null);
 
-  // Fetch user name from Supabase
+  // Fetch user data from Firebase
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
-
-        if (user) {
-          const { data, error } = await supabase
-            .from('app_user')
-            .select('name')
-            .eq('email', user.email)
-            .single();
-
-          if (error) throw error;
-
-          const displayName = data?.name || user.email?.split('@')[0] || 'User';
-          setUserName(displayName);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const displayName = userDoc.data()?.name || user.email?.split('@')[0] || 'User';
+            setUserName(displayName);
+          }
+        } catch (error) {
+          console.error("Error fetching user:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
       }
-    };
-
-    fetchUser();
+    });
+    return () => unsubscribe();
   }, []);
 
-  // Fetch library content from localStorage (or Supabase if you prefer)
+  // Fetch library content from Firestore
   useEffect(() => {
-    const fetchLibraryContent = () => {
+    const fetchLibraryContent = async () => {
+      if (!userId) return;
+      
       try {
-        const savedContent = JSON.parse(localStorage.getItem('dorfnewLibrary')) || {
-          Images: [],
-          Videos: [],
-          Audio: []
-        };
-        setLibraryContent(savedContent);
+        const content = { Images: [], Videos: [], Audio: [] };
+        
+        // Fetch images
+        const imagesQuery = query(
+          collection(db, "library"),
+          where("userId", "==", userId),
+          where("type", "==", "image")
+        );
+        const imagesSnapshot = await getDocs(imagesQuery);
+        content.Images = imagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Fetch videos
+        const videosQuery = query(
+          collection(db, "library"),
+          where("userId", "==", userId),
+          where("type", "==", "video")
+        );
+        const videosSnapshot = await getDocs(videosQuery);
+        content.Videos = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Fetch audio
+        const audioQuery = query(
+          collection(db, "library"),
+          where("userId", "==", userId),
+          where("type", "==", "audio")
+        );
+        const audioSnapshot = await getDocs(audioQuery);
+        content.Audio = audioSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        setLibraryContent(content);
       } catch (error) {
         console.error("Error loading library content:", error);
       }
     };
 
     fetchLibraryContent();
-    
-    // Also listen for storage events in case content is added from another tab
-    window.addEventListener('storage', fetchLibraryContent);
-    return () => window.removeEventListener('storage', fetchLibraryContent);
-  }, []);
+  }, [userId]);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: React.SetStateAction<string>) => {
     setActiveTab(tab);
   };
 
-  const handleDownload = (content) => {
+  const handleDownload = (content: { src: string; title: any; type: string; }) => {
     const link = document.createElement('a');
     link.href = content.src;
     link.download = `${content.title}.${content.type === 'image' ? 'png' : content.type === 'video' ? 'mp4' : 'mp3'}`;
@@ -78,13 +95,20 @@ export default function Library() {
     document.body.removeChild(link);
   };
 
-  const handleDelete = (content, category) => {
-    const updatedContent = {
-      ...libraryContent,
-      [category]: libraryContent[category].filter(item => item.src !== content.src)
-    };
-    setLibraryContent(updatedContent);
-    localStorage.setItem('dorfnewLibrary', JSON.stringify(updatedContent));
+  const handleDelete = async (content: { id: string; }, category: string) => {
+    try {
+      // Delete from Firestore
+      await deleteDoc(doc(db, "library", content.id));
+      
+      // Update local state
+      const updatedContent = {
+        ...libraryContent,
+        [category]: libraryContent[category].filter((item: { id: string; }) => item.id !== content.id)
+      };
+      setLibraryContent(updatedContent);
+    } catch (error) {
+      console.error("Error deleting content:", error);
+    }
   };
 
   return (
@@ -128,7 +152,7 @@ export default function Library() {
         <div className={styles.contentGrid}>
           {libraryContent[activeTab]?.length > 0 ? (
             libraryContent[activeTab].map((content, index) => (
-              <div key={index} className={styles.contentCard}>
+              <div key={content.id || index} className={styles.contentCard}>
                 {content.type === 'image' && (
                   <img
                     src={content.src}
