@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import styles from "../../styles/Signup.module.css";
 import { auth, db } from "lib/firebase";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
 import {
@@ -108,67 +109,78 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Create Account</h1>
-          <p className="mt-2 text-gray-600">Join DorfNewAI today</p>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Create Account</h1>
+          <p className={styles.subtitle}>Join DorfNewAI today</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="name" className={styles.label}>
+              Full Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={styles.input}
+              placeholder="John Doe"
+            />
+          </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
+          <div className={styles.inputGroup}>
+            <label htmlFor="email" className={styles.label}>
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={styles.input}
+              placeholder="your@email.com"
+            />
+          </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPass(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
+          <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.label}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPass(e.target.value)}
+              className={styles.input}
+              placeholder="••••••••"
+            />
+            <div className={styles.passwordHint}>
+              Must be at least 6 characters
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={styles.button}
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg 
+                  className={styles.spinner} 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -178,12 +190,12 @@ export default function Signup() {
           </button>
         </form>
 
-        <div className="text-center text-sm text-gray-600">
+        <p className={styles.loginText}>
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/login" className={styles.loginLink}>
             Sign in
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );
