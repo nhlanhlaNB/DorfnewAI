@@ -1,288 +1,258 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
+/* app/subscription/page.tsx */
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import Script from 'next/script';
+import { useRouter } from 'next/navigation';
 import {
   getAuth,
   onAuthStateChanged,
-  User as FirebaseUser,
-} from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import { auth, db } from "lib/firebase"; // your initialized Firebase app
-import styles from "../../styles/SubscriptionPage.module.css";
+  User,
+} from 'firebase/auth';
 
-// Initialise Stripe with Publishable Key
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ""
-);
+import styles from '../../styles/SubscriptionPage.module.css';
 
-interface PaymentFormProps {
-  plan: string;
-  priceId: string;
-  onClose: () => void;
+/* ──────────────────────────────────────────────────────────── */
+/* Plans                                                       */
+/* ──────────────────────────────────────────────────────────── */
+interface Plan {
+  title: string;
+  price: string;
+  description: string;
+  features: string[];
+  paypalPlanId: string;        // PayPal **subscription plan** ID
+  popular?: boolean;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ plan, priceId, onClose }) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [error, setError] = useState<string | null>(null);
-  const [processing, setProcessing] = useState(false);
+const plans: Plan[] = [
+  {
+    title: 'Individual',
+    price: '$10',
+    description:
+      'Ideal for solo creators who want to unlock the full potential of the platform.',
+    features: [
+      'Ad‑free experience',
+      '10 GB storage for uploads',
+      'Access to premium templates',
+      'Advanced analytics',
+      'Priority e‑mail support',
+    ],
+    paypalPlanId: 'P-4SW2058640943662UNBTJI6Y',     // ← your PayPal plan id
+  },
+  {
+    title: 'Business',
+    price: '$35',
+    description:
+      'Designed for businesses needing advanced features and team collaboration.',
+    features: [
+      'Ad‑free experience',
+      '50 GB storage for uploads',
+      'Access to premium templates',
+      'Advanced analytics',
+      'Team collaboration (up to 5 users)',
+      '24/7 priority support',
+    ],
+    paypalPlanId: 'P-3JC40256EM658594HNBUFIBA',
+    popular: true,
+  },
+  {
+    title: 'Family',
+    price: '$25',
+    description:
+      'Great for families or small groups, with shared access for up to 4 members.',
+    features: [
+      'Ad‑free experience',
+      '20 GB storage for uploads',
+      'Access to premium templates',
+      'Advanced analytics',
+      'Shared access for 4 members',
+      'Priority e‑mail support',
+    ],
+    paypalPlanId: 'P-3CS59433TT1532629NBT25SQ',         // ← your PayPal plan id
+  },
+];
 
-  const auth = getAuth();
-  const db = getFirestore();
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setProcessing(true);
-
-    if (!stripe || !elements) {
-      setError("Stripe.js hasn’t loaded yet.");
-      setProcessing(false);
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-
-    if (!cardElement) {
-      setError("Card element not found.");
-      setProcessing(false);
-      return;
-    }
-
-    try {
-      // Create a Payment Method
-      const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-      });
-
-      if (error) {
-        setError(error.message || "Payment method creation failed.");
-        setProcessing(false);
-        return;
-      }
-
-      // Send paymentMethod.id and priceId to backend
-      const response = await fetch("/api/create-subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId, paymentMethodId: paymentMethod.id }),
-      });
-
-      const result = await response.json();
-
-      if (result.error) {
-        setError(result.error);
-        setProcessing(false);
-        return;
-      }
-
-      // Handle 3D Secure if required
-      if (result.requiresAction) {
-        const { error: confirmError } = await stripe.confirmCardPayment(
-          result.clientSecret
-        );
-        if (confirmError) {
-          setError(confirmError.message || "3D Secure authentication failed.");
-          setProcessing(false);
-          return;
-        }
-      }
-
-      // Subscription successful – optionally persist to Firestore
-      const currentUser: FirebaseUser | null = auth.currentUser;
-      if (currentUser) {
-        await setDoc(doc(db, "subscriptions", currentUser.uid), {
-          plan,
-          priceId,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
-      alert("Subscription created successfully!");
-      onClose();
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className={styles.paymentForm}>
-      <h3>Subscribe to {plan} Plan</h3>
-      <CardElement
-        options={{ style: { base: { color: "#ffffff", fontSize: "16px" } } }}
-      />
-      {error && <p className={styles.error}>{error}</p>}
-      <button
-        type="submit"
-        disabled={!stripe || processing}
-        className={styles.submitButton}
-      >
-        {processing ? "Processing..." : "Pay Now"}
-      </button>
-      <button type="button" onClick={onClose} className={styles.cancelButton}>
-        Cancel
-      </button>
-    </form>
-  );
-};
-
+/* ──────────────────────────────────────────────────────────── */
+/* Component                                                   */
+/* ──────────────────────────────────────────────────────────── */
 export default function SubscriptionPage() {
   const router = useRouter();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const auth = getAuth();
+  /* Auth gate (no DB) ─────────────────────────────────────── */
+  const auth                 = getAuth();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser]       = useState<User | null>(null);
 
-  // Auth check
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push("/login");
+    const off = onAuthStateChanged(auth, (u) => {
+      if (!u) {
+        router.push('/login');
       } else {
-        setIsAuthenticated(true);
+        setUser(u);
       }
+      setLoading(false);
     });
-
-    return () => unsubscribe();
+    return () => off();
   }, [auth, router]);
 
-  const plans = [
-    {
-      title: "Individual",
-      price: "$10",
-      priceId: "price_1YourIndividualPriceID", // Replace with actual Stripe Price ID
-      description:
-        "Ideal for solo creators who want to unlock the full potential of the platform.",
-      features: [
-        "Ad-free experience",
-        "10GB storage for uploads",
-        "Access to premium templates",
-        "Advanced analytics",
-        "Priority email support",
-      ],
-    },
-    {
-      title: "Business",
-      price: "$25",
-      priceId: "price_1YourBusinessPriceID", // Replace with actual Stripe Price ID
-      description:
-        "Designed for businesses needing advanced features and team collaboration.",
-      features: [
-        "Ad-free experience",
-        "50GB storage for uploads",
-        "Access to premium templates",
-        "Advanced analytics",
-        "Team collaboration (up to 5 users)",
-        "24/7 priority support",
-      ],
-    },
-    {
-      title: "Family",
-      price: "$15",
-      priceId: "price_1YourFamilyPriceID", // Replace with actual Stripe Price ID
-      description:
-        "Great for families or small groups, with shared access for up to 4 members.",
-      features: [
-        "Ad-free experience",
-        "20GB storage for uploads",
-        "Access to premium templates",
-        "Advanced analytics",
-        "Shared access for 4 members",
-        "Priority email support",
-      ],
-    },
-  ];
+  /* PayPal Buttons ────────────────────────────────────────── */
+  const [paypalReady, setPaypalReady] = useState(false);
+  const rendered = useRef<Record<string, boolean>>({});
 
-  const handleCloseClick = () => {
-    router.push("/dashboard");
-  };
+  useEffect(() => {
+    if (!paypalReady || !user) return;
 
-  const handleSignUpClick = (plan: string, priceId: string) => {
-    setSelectedPlan(plan);
-    setSelectedPriceId(priceId);
-  };
+    plans.forEach((plan) => {
+      const container = document.getElementById(
+        `paypal-button-container-${plan.paypalPlanId}`,
+      );
+      if (
+        container &&
+        !rendered.current[plan.paypalPlanId] &&
+        (window as any).paypal?.Buttons
+      ) {
+        (window as any).paypal.Buttons({
+          style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe',
+          },
+          createSubscription: (_data: any, actions: any) =>
+            actions.subscription.create({ plan_id: plan.paypalPlanId }),
+          onApprove: (data: any) => {
+            alert(
+              `Thanks for subscribing!\nSubscription ID: ${data.subscriptionID}`,
+            );
+          },
+        }).render(container);
 
-  const closeModal = () => {
-    setSelectedPlan(null);
-    setSelectedPriceId(null);
-  };
+        rendered.current[plan.paypalPlanId] = true; // remember
+      }
+    });
+  }, [paypalReady, user]);
 
-  if (!isAuthenticated) {
-    return null; // Render nothing until auth check completes
+  /* Loading splash ────────────────────────────────────────── */
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loader} />
+        <p>Initializing application…</p>
+      </div>
+    );
   }
 
+  /* UI ─────────────────────────────────────────────────────── */
   return (
-    <div className={styles.pageWrapper}>
-      <header className={styles.header}>
-        <button
-          className={styles.closeButton}
-          onClick={handleCloseClick}
-          title="Back to Dashboard"
-          aria-label="Back to Dashboard"
-        >
-          <i className="fas fa-times"></i>
-        </button>
-      </header>
-      <main className={styles.main}>
-        <h1 className={styles.pageTitle}>Unlock Premium Features</h1>
-        <p className={styles.pageSubtitle}>
-          Choose the plan that best suits your needs and start creating without
-          limits!
-        </p>
-        <div className={styles.pricingContainer}>
-          {plans.map((plan) => (
-            <div key={plan.title} className={styles.planCard}>
-              <h2 className={styles.planTitle}>{plan.title}</h2>
-              <p className={styles.planPrice}>
-                {plan.price}
-                <span>/month</span>
-              </p>
-              <p className={styles.planDescription}>{plan.description}</p>
-              <ul className={styles.planFeatures}>
-                {plan.features.map((feature, index) => (
-                  <li key={index}>
-                    <i className="fas fa-check-circle"></i> {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={styles.signUpButton}
-                onClick={() => handleSignUpClick(plan.title, plan.priceId)}
+    <>
+      {/* PayPal Subscriptions SDK – loaded exactly once */}
+      <Script
+        src="https://www.paypal.com/sdk/js?client-id=AV4Blmjwp981Sl85YsvLyCpdJC1qCdRnZ-Y6jzQNcFtEr9laPnG8zt3fQffQpBUmUzEo0UUlBd_McFGe&vault=true&intent=subscription"
+        strategy="afterInteractive"
+        data-sdk-integration-source="button-factory"
+        onLoad={() => setPaypalReady(true)}
+      />
+
+      {/* page head tags */}
+      <head>
+        <title>Subscription Plans</title>
+        <meta
+          name="description"
+          content="Choose the plan that best suits your needs"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        />
+      </head>
+
+      <div className={styles.pageWrapper}>
+        {/* header */}
+        <header className={styles.header}>
+          <button
+            className={styles.closeButton}
+            onClick={() => router.push('/dashboard')}
+            aria-label="Back to dashboard"
+          >
+            <i className="fas fa-times" />
+          </button>
+        </header>
+
+        {/* main */}
+        <main className={styles.main}>
+          <h1 className={styles.pageTitle}>Unlock Premium Features</h1>
+          <p className={styles.pageSubtitle}>
+            Choose the plan that best suits your needs and start creating
+            without limits!
+          </p>
+
+          <div className={styles.pricingContainer}>
+            {plans.map((plan) => (
+              <div
+                key={plan.title}
+                className={`${styles.planCard} ${
+                  plan.popular ? styles.popularPlan : ''
+                }`}
               >
-                Sign Up
-              </button>
-            </div>
-          ))}
-        </div>
-      </main>
-      {selectedPlan && selectedPriceId && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <Elements stripe={stripePromise}>
-              <PaymentForm
-                plan={selectedPlan}
-                priceId={selectedPriceId}
-                onClose={closeModal}
-              />
-            </Elements>
+                {plan.popular && (
+                  <div className={styles.popularBadge}>Most Popular</div>
+                )}
+
+                <h2 className={styles.planTitle}>{plan.title}</h2>
+                <p className={styles.planPrice}>
+                  {plan.price}
+                  <span>/month</span>
+                </p>
+                <p className={styles.planDescription}>{plan.description}</p>
+
+                <ul className={styles.planFeatures}>
+                  {plan.features.map((f) => (
+                    <li key={f}>
+                      <i className="fas fa-check-circle" /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* PayPal button mounts here */}
+                <div
+                  id={`paypal-button-container-${plan.paypalPlanId}`}
+                  className={styles.paypalButtonContainer}
+                />
+              </div>
+            ))}
           </div>
-        </div>
-      )}
-      <footer className={styles.footer}>
-        <p className="mb-0">
-          <i className="fas fa-copyright"></i> 2025 DorfNewAI. All rights
-          reserved.
-        </p>
-      </footer>
-    </div>
+        </main>
+
+        {/* footer */}
+        <footer className={styles.footer}>
+          <p>
+            <i className="fas fa-copyright" /> {new Date().getFullYear()} 
+            DorfNewAI. All rights reserved.
+          </p>
+          <p className={styles.termsLink}>
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Terms of Service"
+            >
+              Terms of Service
+            </a>
+          </p>
+        </footer>
+      </div>
+    </>
   );
+}
+function getPriceFromPlanId(planId: string): string {
+  switch (planId) {
+    case 'REPLACE_ME_INDIVIDUAL':
+      return '10.00';
+    case 'P-4SW2058640943662UNBTJI6Y': // real ID you provided
+      return '35.00';
+    case 'REPLACE_ME_FAMILY':
+      return '25.00';
+    default:
+      throw new Error(`Unknown plan ID: ${planId}`);
+  }
 }

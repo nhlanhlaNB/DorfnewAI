@@ -1,11 +1,14 @@
+/* Base Styles */
 .pageWrapper {
   background: #2a2a40;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Header Styles */
 .header {
   background: #2a2a40;
   padding: 20px;
@@ -13,6 +16,9 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .closeButton {
@@ -22,6 +28,7 @@
   font-size: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  padding: 5px;
 }
 
 .closeButton:hover {
@@ -29,6 +36,7 @@
   transform: scale(1.1);
 }
 
+/* Main Content Styles */
 .main {
   flex: 1;
   padding: 40px 20px;
@@ -40,21 +48,28 @@
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 10px;
+  line-height: 1.2;
 }
 
 .pageSubtitle {
   font-size: 1.2rem;
   color: #b0b0c0;
   margin-bottom: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
 }
 
+/* Pricing Plans */
 .pricingContainer {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 20px;
 }
 
 .planCard {
@@ -62,29 +77,48 @@
   border-radius: 15px;
   padding: 30px;
   width: 100%;
-  max-width: 300px;
+  max-width: 350px;
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.popularPlan {
+  border: 2px solid #7b68ee;
+}
+
+.popularBadge {
+  position: absolute;
+  top: 15px;
+  right: -30px;
+  background: #7b68ee;
+  color: white;
+  padding: 5px 30px;
+  transform: rotate(45deg);
+  font-size: 0.8rem;
+  font-weight: bold;
 }
 
 .planCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .planTitle {
   font-size: 1.8rem;
   font-weight: 600;
   color: #ffffff;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .planPrice {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #00ddeb;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .planPrice span {
@@ -96,31 +130,180 @@
 .planDescription {
   font-size: 1rem;
   color: #b0b0c0;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+  min-height: 60px;
 }
 
 .planFeatures {
   list-style: none;
   padding: 0;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-align: left;
 }
 
 .planFeatures li {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #ffffff;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  line-height: 1.4;
 }
 
 .planFeatures li i {
   color: #7b68ee;
   margin-right: 10px;
+  margin-top: 3px;
+  flex-shrink: 0;
 }
 
-.signUpButton {
-  padding: 10px 25px;
+.paypalButtonContainer {
+  min-height: 50px;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Footer Styles */
+.footer {
+  background: #2a2a40;
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.footer p {
+  color: #b0b0c0;
+  font-size: 0.9rem;
+  margin: 5px 0;
+}
+
+.footer i {
+  margin-right: 5px;
+}
+
+.termsLink a {
+  color: #00ddeb;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.termsLink a:hover {
+  color: #7b68ee;
+  text-decoration: underline;
+}
+
+/* Loading and Error States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1.5rem;
+}
+
+.loader {
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-top: 5px solid #7b68ee;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.errorContainer h2 {
+  color: #ff4d4d;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.errorContainer p {
+  color: #b0b0c0;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+}
+
+.retryButton {
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #7b68ee, #00ddeb);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.retryButton:hover {
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
+  transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: #2a2a40;
+  border-radius: 15px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.paymentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.paymentForm h3 {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.paymentForm .error {
+  color: #ff4d4d;
+  font-size: 0.9rem;
+  margin-top: -15px;
+}
+
+.submitButton {
+  padding: 12px;
   background: linear-gradient(90deg, #7b68ee, #00ddeb);
   color: #ffffff;
   border: none;
@@ -128,34 +311,45 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 100%;
+  font-size: 1rem;
 }
 
-.signUpButton:hover {
+.submitButton:hover {
   background: linear-gradient(90deg, #00ddeb, #7b68ee);
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
-.footer {
-  background: #2a2a40;
-  padding: 20px;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.submitButton:disabled {
+  background: #555;
+  cursor: not-allowed;
+  transform: none;
 }
 
-.footer p {
+.cancelButton {
+  padding: 12px;
+  background: transparent;
+  color: #b0b0c0;
+  border: 1px solid #b0b0c0;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
-  font-size: 0.9rem;
+  border-color: #ffffff;
 }
 
-.footer i {
-  margin-right: 5px;
-}
-
+/* Responsive Styles */
 @media (max-width: 768px) {
   .pricingContainer {
     flex-direction: column;
     align-items: center;
+    gap: 20px;
+    padding: 10px;
   }
 
   .planCard {
@@ -168,81 +362,36 @@
 
   .pageSubtitle {
     font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  .modalContent {
+    padding: 20px;
   }
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
+@media (max-width: 480px) {
+  .header {
+    padding: 15px;
+  }
 
-.modalContent {
-  background: #2a2a40;
-  border-radius: 15px;
-  padding: 30px;
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
+  .closeButton {
+    font-size: 1.8rem;
+  }
 
-.paymentForm {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+  .main {
+    padding: 30px 15px;
+  }
 
-.paymentForm h3 {
-  font-size: 1.5rem;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
+  .pageTitle {
+    font-size: 1.8rem;
+  }
 
-.paymentForm .error {
-  color: #ff4d4d;
-  font-size: 0.9rem;
-}
+  .planTitle {
+    font-size: 1.6rem;
+  }
 
-.submitButton {
-  padding: 10px;
-  background: linear-gradient(90deg, #7b68ee, #00ddeb);
-  color: #ffffff;
-  border: none;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.submitButton:hover {
-  background: linear-gradient(90deg, #00ddeb, #7b68ee);
-  transform: scale(1.05);
-}
-
-.submitButton:disabled {
-  background: #555;
-  cursor: not-allowed;
-}
-
-.cancelButton {
-  padding: 10px;
-  background: #b0b0c0;
-  color: #ffffff;
-  border: none;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cancelButton:hover {
-  background: #999;
+  .planPrice {
+    font-size: 2rem;
+  }
 }
