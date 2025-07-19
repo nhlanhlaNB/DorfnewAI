@@ -4,35 +4,20 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/Login.module.css";
-import { auth } from "lib/firebase";
+import { auth } from "../../lib/firebase";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  // Handle auth state changes
-  useEffect(() => {
-    setIsMounted(true);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && isMounted) {
-        router.push("/dashboard");
-      }
-    });
-    return () => {
-      setIsMounted(false);
-      unsubscribe();
-    };
-  }, [router, isMounted]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
       toast({
@@ -48,14 +33,15 @@ export default function Login() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       await signInWithEmailAndPassword(auth, normalizedEmail, password);
-      
+
       toast({
         title: "Login successful",
         description: "Redirecting to your dashboard...",
       });
-      
-      // No need to redirect here, the auth state change will handle it
-    } catch (error: any) {
+
+      // Redirect to dashboard after successful login
+      router.push("/dashboard");
+    } catch (error) {
       console.error("Login error:", error);
       let message = "Login failed. Please try again.";
 
@@ -141,20 +127,33 @@ export default function Login() {
           >
             {isLoading ? (
               <>
-                <svg 
-                  className={styles.spinner} 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
+                <svg
+                  className={styles.spinner}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                 >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Signing in...
               </>
-            ) : "Sign in"}
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
 
@@ -168,6 +167,3 @@ export default function Login() {
     </div>
   );
 }
-
-
-

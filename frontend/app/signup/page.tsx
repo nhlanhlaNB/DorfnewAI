@@ -1,49 +1,29 @@
+
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/Signup.module.css";
-import { auth, db } from "lib/firebase";
+import { auth, db } from "../../lib/firebase";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateProfile,
-  onAuthStateChanged
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPass] = useState("");
-  const [isLoading, setBusy] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  // Handle mount state and auth changes
-  useEffect(() => {
-    setIsMounted(true);
-    
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Only redirect if we're not in the middle of form submission
-      if (user && !isLoading) {
-        router.push("/dashboard");
-      }
-    });
-    
-    return () => {
-      setIsMounted(false);
-      unsubscribe();
-    };
-  }, [router, isLoading]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isMounted) return;
-    
-    setBusy(true);
+    setIsLoading(true);
 
     try {
       // Basic validation
@@ -66,13 +46,13 @@ export default function Signup() {
       // Send verification email
       await sendEmailVerification(user);
 
-      // Create user document
-      await setDoc(doc(db, "users", user.uid), {
+      // Create user document in app_user collection
+      await setDoc(doc(db, "app_user", user.email), {
         uid: user.uid,
         email: normalizedEmail,
         name,
         createdAt: serverTimestamp(),
-        emailVerified: false
+        emailVerified: false,
       });
 
       toast({
@@ -80,20 +60,20 @@ export default function Signup() {
         description: "Verification email sent. Please check your inbox.",
       });
 
-      // Give the toast time to show before redirect
+      // Redirect to verify-email page after a short delay
       setTimeout(() => {
-        if (isMounted) {
-          router.push("/verify-email");
-        }
+        router.push("/verify-email");
       }, 1500);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Signup error:", error);
       let message = error.message;
-      
+
       if (error.code === "auth/email-already-in-use") {
         message = "Email already in use. Try logging in instead.";
       } else if (error.code === "auth/weak-password") {
         message = "Password should be at least 6 characters";
+      } else if (error.code === "auth/invalid-email") {
+        message = "Please enter a valid email address";
       }
 
       toast({
@@ -102,9 +82,7 @@ export default function Signup() {
         variant: "destructive",
       });
     } finally {
-      if (isMounted) {
-        setBusy(false);
-      }
+      setIsLoading(false);
     }
   };
 
@@ -157,7 +135,7 @@ export default function Signup() {
               required
               minLength={6}
               value={password}
-              onChange={(e) => setPass(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className={styles.input}
               placeholder="••••••••"
             />
@@ -173,20 +151,33 @@ export default function Signup() {
           >
             {isLoading ? (
               <>
-                <svg 
-                  className={styles.spinner} 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="20" 
-                  height="20" 
+                <svg
+                  className={styles.spinner}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
                   viewBox="0 0 24 24"
                   fill="none"
                 >
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Creating account...
               </>
-            ) : "Sign up"}
+            ) : (
+              "Sign up"
+            )}
           </button>
         </form>
 
@@ -200,4 +191,3 @@ export default function Signup() {
     </div>
   );
 }
-

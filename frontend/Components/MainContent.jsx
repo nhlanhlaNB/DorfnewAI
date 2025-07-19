@@ -1,7 +1,7 @@
 "use client";
 import styles from "../styles/MainContent.module.css";
 import React, { useState, useRef, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 export default function MainContent({ onGenerateClick }) {
   const router = useRouter();
@@ -15,7 +15,6 @@ export default function MainContent({ onGenerateClick }) {
     { name: "Images", color: "#00ddeb" },
   ];
 
-  // Mock subscription data
   const subscriptions = [
     {
       channelName: "Nhlanhla's AI Sports Clips",
@@ -40,7 +39,6 @@ export default function MainContent({ onGenerateClick }) {
     },
   ];
 
-  // Dummy media data (3 items per category)
   const [dummyMedia, setDummyMedia] = useState({
     Videos: [
       {
@@ -95,11 +93,10 @@ export default function MainContent({ onGenerateClick }) {
     ],
   });
 
-  // Hardcoded fallback media for API failure
   const fallbackMedia = {
     image: {
       type: "image",
-      src: "https://png.pngtree.com/thumb_back/fh260/background/20230703/pngtree-3d-rendering-of-drone-soaring-above-ocean-image_3788567.jpg",
+      src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
       title: "Fallback Tiger Image",
     },
     video: {
@@ -111,7 +108,7 @@ export default function MainContent({ onGenerateClick }) {
       type: "audio",
       src: "https://cdn.pixabay.com/audio/2023/10/25/audio_508e9b4631.mp3",
       title: "Fallback Instrumental Music",
-    }
+    },
   };
 
   const [subscribedChannels, setSubscribedChannels] = useState(subscriptions);
@@ -120,16 +117,17 @@ export default function MainContent({ onGenerateClick }) {
   const [progress, setProgress] = useState(0);
   const [generatedContent, setGeneratedContent] = useState(null);
 
-  // Expose handleGenerateClick to Header via ref
   useEffect(() => {
     if (onGenerateClick) {
       onGenerateClick.current = handleGenerateClick;
-      console.log("handleGenerateClick assigned to onGenerateClick ref"); // Debugging
+      console.log("handleGenerateClick assigned to onGenerateClick ref");
     }
   }, [onGenerateClick]);
 
   const handleUnsubscribe = (channelName) => {
-    setSubscribedChannels(subscribedChannels.filter((sub) => sub.channelName !== channelName));
+    setSubscribedChannels(
+      subscribedChannels.filter((sub) => sub.channelName !== channelName)
+    );
   };
 
   const handleTopicClick = (topicName) => {
@@ -150,39 +148,43 @@ export default function MainContent({ onGenerateClick }) {
     setGeneratedContent(null);
   };
 
-const storeGeneratedContent = (content) => {
-  const category = content.type === "image" ? "Images" : 
-                  content.type === "video" ? "Videos" : "Audio";
+  const storeGeneratedContent = (content) => {
+    const category = content.type === "image" ? "Images" : 
+                    content.type === "video" ? "Videos" : "Audio";
   
-  // Update local state
-  setDummyMedia((prev) => ({
-    ...prev,
-    [category]: [...prev[category], content],
-  }));
+    setDummyMedia((prev) => ({
+      ...prev,
+      [category]: [...prev[category], content],
+    }));
   
-  // Save to localStorage for the library
-  const libraryContent = JSON.parse(localStorage.getItem('dorfnewLibrary')) || {
-    Images: [],
-    Videos: [],
-    Audio: []
+    const libraryContent = JSON.parse(localStorage.getItem("dorfnewLibrary")) || {
+      Images: [],
+      Videos: [],
+      Audio: [],
+    };
+  
+    libraryContent[category].push(content);
+    localStorage.setItem("dorfnewLibrary", JSON.stringify(libraryContent));
   };
-  
-  libraryContent[category].push(content);
-  localStorage.setItem('dorfnewLibrary', JSON.stringify(libraryContent));
-  
-  // If you're using Supabase, you would also save to the database here
-};
 
   const getContentTypeFromPrompt = (prompt) => {
     const lowerPrompt = prompt.toLowerCase();
-    if (lowerPrompt.includes('video') || lowerPrompt.includes('movie') || lowerPrompt.includes('clip')) {
-      return 'video';
-    } else if (lowerPrompt.includes('music') || lowerPrompt.includes('song') || lowerPrompt.includes('beat')) {
-      return 'audio';
-    } else if (lowerPrompt.includes('speak') || lowerPrompt.includes('voice')) {
-      return 'audio';
+    if (
+      lowerPrompt.includes("video") ||
+      lowerPrompt.includes("movie") ||
+      lowerPrompt.includes("clip")
+    ) {
+      return "video";
+    } else if (
+      lowerPrompt.includes("music") ||
+      lowerPrompt.includes("song") ||
+      lowerPrompt.includes("beat") ||
+      lowerPrompt.includes("speak") ||
+      lowerPrompt.includes("voice")
+    ) {
+      return "audio";
     }
-    return 'image'; // Default to image
+    return "image";
   };
 
   const handleGenerateClick = async (prompt) => {
@@ -191,10 +193,11 @@ const storeGeneratedContent = (content) => {
     setProgress(0);
     setGeneratedContent(null);
 
-    // Determine content type based on prompt
     const contentType = getContentTypeFromPrompt(prompt);
-    
-    // Simulate progress
+    if (contentType !== "image") {
+      console.warn("RunPod Stability Model only supports images. Generating image.");
+    }
+
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 95) {
@@ -206,57 +209,97 @@ const storeGeneratedContent = (content) => {
     }, 200);
 
     try {
-      // Determine API URL based on content type
-      let apiUrl;
-      switch(contentType) {
-        case 'video':
-          apiUrl = process.env.NEXT_PUBLIC_OPENSORA_API_URL;
-          break;
-        case 'audio':
-          apiUrl = process.env.NEXT_PUBLIC_AUDIOLDM_API_URL;
-          break;
-        default:
-          apiUrl = process.env.NEXT_PUBLIC_SD35_API_URL;
-      }
+      const apiKey = process.env.NEXT_PUBLIC_RUNPOD_API_KEY;
+      const endpointId = process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT_ID;
+      const apiUrl = `https://api.runpod.ai/v2/${endpointId}/run`;
 
-      console.log("Calling API:", apiUrl, "with prompt:", prompt);
-      
-      // Make API call
+      console.log("Submitting job to:", apiUrl);
       const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, duration: contentType === 'audio' ? 30.0 : 5.0 }),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ input: { prompt } }),
       });
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        throw new Error(`RunPod API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
+      const jobId = data.id;
+
+      if (!jobId) {
+        throw new Error("No job ID returned from RunPod API");
+      }
+
+      console.log("Job ID:", jobId);
+      const statusUrl = `https://api.runpod.ai/v2/${endpointId}/status/${jobId}`;
+      let jobStatus = "IN_PROGRESS";
+      let output = null;
+
+      while (jobStatus === "IN_PROGRESS" || jobStatus === "IN_QUEUE") {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const statusResponse = await fetch(statusUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        });
+
+        if (!statusResponse.ok) {
+          throw new Error(`Status check failed: ${statusResponse.statusText}`);
+        }
+
+        const statusData = await statusResponse.json();
+        console.log("Status Data:", statusData);
+        jobStatus = statusData.status;
+
+        if (jobStatus === "COMPLETED") {
+          output = statusData.output;
+          console.log("Output:", output);
+          break;
+        } else if (jobStatus === "FAILED" || jobStatus === "CANCELLED") {
+          throw new Error(`Job failed with status: ${jobStatus}`);
+        }
+      }
+
       clearInterval(interval);
       setProgress(100);
 
-      if (data.status === 'success') {
+      if (output) {
+        let imageSrc;
+        if (output.image_url) {
+          imageSrc = output.image_url;
+        } else if (output.image) {
+          imageSrc = output.image;
+        } else if (typeof output === "string" && output.startsWith("data:image")) {
+          imageSrc = output;
+        } else if (typeof output === "string") {
+          imageSrc = `data:image/png;base64,${output}`;
+        } else {
+          throw new Error("Unexpected output format from RunPod");
+        }
+
         const content = {
-          type: data.type || contentType,
-          src: `data:${contentType === 'image' ? 'image/png' : contentType === 'video' ? 'video/mp4' : 'audio/mpeg'};base64,${data.output}`,
+          type: "image",
+          src: imageSrc,
           title: prompt,
         };
+        console.log("Generated Content:", content);
         setGeneratedContent(content);
         storeGeneratedContent(content);
       } else {
-        throw new Error('Generation failed');
+        throw new Error("No output received from RunPod");
       }
     } catch (error) {
       console.error("Generation error:", error);
       clearInterval(interval);
       setProgress(100);
-      
-      // Use fallback media based on determined content type
-      const fallback = fallbackMedia[contentType] || fallbackMedia.image;
-      const content = { 
-        ...fallback, 
-        title: `Fallback ${contentType === 'image' ? 'Image' : contentType === 'video' ? 'Video' : 'Audio'}` 
+
+      const content = {
+        ...fallbackMedia.image,
+        title: `Fallback Image for ${prompt}`,
       };
       setGeneratedContent(content);
       storeGeneratedContent(content);
@@ -265,14 +308,13 @@ const storeGeneratedContent = (content) => {
 
   return (
     <div className={styles.mainContent}>
-      {/* Generate Modal */}
       {isGenerating && (
         <div className={styles.generationModal}>
           <div className={styles.generationBox}>
             <h3>Generating Your Content</h3>
             <div className={styles.progressBar}>
-              <div 
-                className={styles.progressFill} 
+              <div
+                className={styles.progressFill}
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
@@ -280,47 +322,36 @@ const storeGeneratedContent = (content) => {
               {progress < 100 ? `Generating... ${progress}%` : "Generation complete!"}
             </p>
             <div className={styles.generationPreview}>
-              <div className={styles.blurOverlay} style={{ 
-                opacity: progress < 100 ? 0.8 : 0,
-                backdropFilter: progress < 100 ? 'blur(15px)' : 'none'
-              }}></div>
+              <div
+                className={styles.blurOverlay}
+                style={{
+                  opacity: progress < 100 ? 0.8 : 0,
+                  backdropFilter: progress < 100 ? "blur(15px)" : "none",
+                }}
+              ></div>
               {progress >= 100 && generatedContent && (
-                generatedContent.type === "video" ? (
-                  <video
-                    className={styles.generationPreviewImage}
-                    controls
-                    src={generatedContent.src}
-                    title={generatedContent.title}
-                    autoPlay
-                  />
-                ) : generatedContent.type === "image" ? (
+                generatedContent.type === "image" ? (
                   <img
                     src={generatedContent.src}
                     alt={generatedContent.title}
                     className={styles.generationPreviewImage}
                   />
                 ) : (
-                  <audio
-                    className={styles.generationPreviewImage}
-                    controls
-                    src={generatedContent.src}
-                    title={generatedContent.title}
-                    autoPlay
-                  />
+                  <p>Unsupported content type</p>
                 )
               )}
             </div>
             {progress >= 100 && (
               <div className={styles.generationActions}>
                 <a
-                  href={generatedContent.src}
-                  download={`${generatedContent.title}.${generatedContent.type === 'image' ? 'png' : generatedContent.type === 'video' ? 'mp4' : 'mp3'}`}
+                  href={generatedContent?.src}
+                  download={`${generatedContent?.title}.png`}
                   className={styles.downloadButton}
                 >
                   Download
                 </a>
-                <button 
-                  className={styles.closeButton} 
+                <button
+                  className={styles.closeButton}
                   onClick={closeGenerationModal}
                 >
                   Close
@@ -331,7 +362,6 @@ const storeGeneratedContent = (content) => {
         </div>
       )}
 
-      {/* Explore Topics Section */}
       <section className={styles.exploreTopics}>
         <h2>Explore Topics</h2>
         <div className={styles.topicsGrid}>
@@ -348,7 +378,6 @@ const storeGeneratedContent = (content) => {
         </div>
       </section>
 
-      {/* Media Display Section */}
       {selectedCategory && dummyMedia[selectedCategory] && (
         <section className={styles.mediaDisplay}>
           <h3>{selectedCategory}</h3>
@@ -399,7 +428,6 @@ const storeGeneratedContent = (content) => {
         </section>
       )}
 
-      {/* Your Subscriptions Section */}
       <section className={styles.yourSubscriptions}>
         <h2>Your Subscriptions</h2>
         {subscribedChannels.length > 0 ? (

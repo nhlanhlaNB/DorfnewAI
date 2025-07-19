@@ -1,15 +1,16 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-// Make sure you export your initialized Firebase app instance from this file
 import { app } from "../lib/firebase";
 import styles from "../styles/Header.module.css";
+import { useRouter } from "next/navigation";
 
 export default function Header({ onGenerateClick }) {
   const fileInputRef = useRef(null);
-  const [userName, setUserName] = useState(null);
+  const [userName, setUserName] = useState("User");
   const searchInputRef = useRef(null);
+  const router = useRouter();
 
   // Firebase instances
   const auth = getAuth(app);
@@ -20,7 +21,6 @@ export default function Header({ onGenerateClick }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // "app_user" collection uses the user's email as the document ID
           const userDocRef = doc(db, "app_user", user.email);
           const userSnap = await getDoc(userDocRef);
 
@@ -72,11 +72,20 @@ export default function Header({ onGenerateClick }) {
     const prompt = searchInputRef.current?.value.trim() || "";
     console.log("Generate clicked with prompt:", prompt);
 
-    // Call the parent component's generation handler via ref
     if (onGenerateClick?.current) {
       onGenerateClick.current(prompt);
     } else {
       console.error("onGenerateClick ref is not defined");
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      setUserName("User");
+      router.push("/login");
+    } catch (error) {
+      console.error("Sign out error:", error.message);
     }
   };
 
@@ -111,6 +120,9 @@ export default function Header({ onGenerateClick }) {
         <div className={styles.userGreeting}>
           Hello <span className={styles.userName}>{userName}</span>
         </div>
+        <button className={styles.signOutButton} onClick={handleSignOut}>
+          Sign Out
+        </button>
       </div>
     </header>
   );

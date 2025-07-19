@@ -159,3 +159,17 @@
     font-size: 12px; /* Smaller text */
   }
 }
+
+.signOutButton {
+  margin-left: 10px;
+  padding: 8px 16px;
+  background-color: #00ddeb;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.signOutButton:hover {
+  background-color: #d9363e;
+}
