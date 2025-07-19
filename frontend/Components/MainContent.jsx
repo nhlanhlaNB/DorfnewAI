@@ -2,6 +2,8 @@
 import styles from "../styles/MainContent.module.css";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { auth, db } from "../lib/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function MainContent({ onGenerateClick }) {
   const router = useRouter();
@@ -146,25 +148,32 @@ export default function MainContent({ onGenerateClick }) {
     setIsGenerating(false);
     setProgress(0);
     setGeneratedContent(null);
+    router.push("../library?newContent=true");
   };
 
-  const storeGeneratedContent = (content) => {
-    const category = content.type === "image" ? "Images" : 
-                    content.type === "video" ? "Videos" : "Audio";
-  
-    setDummyMedia((prev) => ({
-      ...prev,
-      [category]: [...prev[category], content],
-    }));
-  
-    const libraryContent = JSON.parse(localStorage.getItem("dorfnewLibrary")) || {
-      Images: [],
-      Videos: [],
-      Audio: [],
-    };
-  
-    libraryContent[category].push(content);
-    localStorage.setItem("dorfnewLibrary", JSON.stringify(libraryContent));
+  const storeGeneratedContent = async (content) => {
+    const user = auth.currentUser;
+    if (!user) {
+      console.error("No authenticated user found. Redirecting to login.");
+      router.push("/login");
+      return false;
+    }
+
+    try {
+      const docId = `${user.uid}_${Date.now()}`; // Unique ID for the document
+      await setDoc(doc(db, "library", docId), {
+        userId: user.uid,
+        type: content.type,
+        src: content.src,
+        title: content.title,
+        createdAt: serverTimestamp(),
+      });
+      console.log("Content stored in Firestore:", { docId, ...content });
+      return true;
+    } catch (error) {
+      console.error("Error storing content in Firestore:", error);
+      return false;
+    }
   };
 
   const getContentTypeFromPrompt = (prompt) => {
@@ -288,7 +297,12 @@ export default function MainContent({ onGenerateClick }) {
         };
         console.log("Generated Content:", content);
         setGeneratedContent(content);
-        storeGeneratedContent(content);
+        const stored = await storeGeneratedContent(content);
+        if (!stored) {
+          console.warn("Failed to store content in Firestore. Showing in modal but not redirecting.");
+          return;
+        }
+        setTimeout(() => closeGenerationModal(), 1000); // Delay redirect for user to see the image
       } else {
         throw new Error("No output received from RunPod");
       }
@@ -302,7 +316,12 @@ export default function MainContent({ onGenerateClick }) {
         title: `Fallback Image for ${prompt}`,
       };
       setGeneratedContent(content);
-      storeGeneratedContent(content);
+      const stored = await storeGeneratedContent(content);
+      if (!stored) {
+        console.warn("Failed to store fallback content in Firestore. Showing in modal but not redirecting.");
+        return;
+      }
+      setTimeout(() => closeGenerationModal(), 1000);
     }
   };
 
@@ -354,7 +373,7 @@ export default function MainContent({ onGenerateClick }) {
                   className={styles.closeButton}
                   onClick={closeGenerationModal}
                 >
-                  Close
+                  View in Library
                 </button>
               </div>
             )}

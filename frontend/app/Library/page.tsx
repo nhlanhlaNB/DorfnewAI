@@ -1,21 +1,23 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { auth, db } from "lib/firebase";
+import { auth, db } from "../../lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import { useToast } from "@/../../app/src2/components/ui/use-toast";
 import styles from "../../styles/Library.module.css";
 import Header from "../../components/Header";
 
 export default function Library() {
   const router = useRouter();
+  const { toast } = useToast();
   const [userName, setUserName] = useState(null);
   const [userId, setUserId] = useState(null);
   const [activeTab, setActiveTab] = useState("Images");
   const [libraryContent, setLibraryContent] = useState({
     Images: [],
     Videos: [],
-    Audio: []
+    Audio: [],
   });
   const generateClickRef = useRef(null);
 
@@ -25,27 +27,42 @@ export default function Library() {
       if (user) {
         setUserId(user.uid);
         try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const userDoc = await getDoc(doc(db, "app_user", user.email));
           if (userDoc.exists()) {
             const displayName = userDoc.data()?.name || user.email?.split('@')[0] || 'User';
             setUserName(displayName);
+          } else {
+            console.warn("User document not found in app_user");
+            setUserName(user.email?.split('@')[0] || 'User');
           }
         } catch (error) {
           console.error("Error fetching user:", error);
+          setUserName(user.email?.split('@')[0] || 'User');
+          toast({
+            title: "Error",
+            description: "Failed to fetch user data.",
+            variant: "destructive",
+          });
         }
+      } else {
+        console.warn("No authenticated user. Redirecting to login.");
+        router.push("/login");
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [router, toast]);
 
   // Fetch library content from Firestore
   useEffect(() => {
     const fetchLibraryContent = async () => {
-      if (!userId) return;
-      
+      if (!userId) {
+        console.log("No userId yet, skipping fetch.");
+        return;
+      }
+
       try {
         const content = { Images: [], Videos: [], Audio: [] };
-        
+
         // Fetch images
         const imagesQuery = query(
           collection(db, "library"),
@@ -73,20 +90,35 @@ export default function Library() {
         const audioSnapshot = await getDocs(audioQuery);
         content.Audio = audioSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+        console.log("Fetched library content:", content);
         setLibraryContent(content);
+
+        // Check for new content
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("newContent") === "true") {
+          toast({
+            title: "Content Generated",
+            description: "Your new content has been added to your library!",
+          });
+        }
       } catch (error) {
         console.error("Error loading library content:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load library content: " + error.message,
+          variant: "destructive",
+        });
       }
     };
 
     fetchLibraryContent();
-  }, [userId]);
+  }, [userId, toast]);
 
-  const handleTabChange = (tab: React.SetStateAction<string>) => {
+  const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
-  const handleDownload = (content: { src: string; title: any; type: string; }) => {
+  const handleDownload = (content) => {
     const link = document.createElement('a');
     link.href = content.src;
     link.download = `${content.title}.${content.type === 'image' ? 'png' : content.type === 'video' ? 'mp4' : 'mp3'}`;
@@ -95,26 +127,32 @@ export default function Library() {
     document.body.removeChild(link);
   };
 
-  const handleDelete = async (content: { id: string; }, category: string) => {
+  const handleDelete = async (content, category) => {
     try {
-      // Delete from Firestore
       await deleteDoc(doc(db, "library", content.id));
-      
-      // Update local state
       const updatedContent = {
         ...libraryContent,
-        [category]: libraryContent[category].filter((item: { id: string; }) => item.id !== content.id)
+        [category]: libraryContent[category].filter((item) => item.id !== content.id),
       };
       setLibraryContent(updatedContent);
+      toast({
+        title: "Content Deleted",
+        description: `${content.title} has been removed from your library.`,
+      });
     } catch (error) {
       console.error("Error deleting content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete content: " + error.message,
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <div className={styles.container}>
       <Header onGenerateClick={generateClickRef} />
-      
+
       <main className={styles.mainContent}>
         <div className={styles.headerSection}>
           <h1 className={styles.pageTitle}>My Library</h1>
@@ -123,7 +161,6 @@ export default function Library() {
           </p>
         </div>
 
-        {/* Content Type Tabs */}
         <div className={styles.tabsContainer}>
           <button
             className={`${styles.tabButton} ${activeTab === 'Images' ? styles.activeTab : ''}`}
@@ -148,7 +185,6 @@ export default function Library() {
           </button>
         </div>
 
-        {/* Content Display */}
         <div className={styles.contentGrid}>
           {libraryContent[activeTab]?.length > 0 ? (
             libraryContent[activeTab].map((content, index) => (
@@ -200,9 +236,9 @@ export default function Library() {
             <div className={styles.emptyState}>
               <i className={`fas ${activeTab === 'Images' ? 'fa-image' : activeTab === 'Videos' ? 'fa-video' : 'fa-music'} ${styles.emptyIcon}`}></i>
               <p>No {activeTab.toLowerCase()} in your library yet</p>
-              <button 
+              <button
                 className={styles.generateButton}
-                onClick={() => router.push('../dashboard')}
+                onClick={() => router.push('/dashboard')}
               >
                 Generate Some Content
               </button>
