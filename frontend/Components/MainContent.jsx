@@ -203,9 +203,12 @@ export default function MainContent({ onGenerateClick }) {
     setGeneratedContent(null);
 
     const contentType = getContentTypeFromPrompt(prompt);
-    if (contentType !== "image") {
-      console.warn("RunPod Stability Model only supports images. Generating image.");
-    }
+    const endpointMap = {
+      image: "https://<endpoint-id>.runpod.io/generate/image1",
+      video: "https://<endpoint-id>.runpod.io/generate/video",
+      audio: "https://<endpoint-id>.runpod.io/generate/audio",
+    };
+    const endpointUrl = endpointMap[contentType] || endpointMap["image"]; // Default to image if unsupported
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -218,102 +221,65 @@ export default function MainContent({ onGenerateClick }) {
     }, 200);
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_RUNPOD_API_KEY;
-      const endpointId = process.env.NEXT_PUBLIC_RUNPOD_ENDPOINT_ID;
-      const apiUrl = `https://api.runpod.ai/v2/${endpointId}/run`;
-
-      console.log("Submitting job to:", apiUrl);
-      const response = await fetch(apiUrl, {
+      const response = await fetch(endpointUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ input: { prompt } }),
+        body: JSON.stringify({ prompt }),
       });
 
       if (!response.ok) {
-        throw new Error(`RunPod API request failed: ${response.statusText}`);
+        throw new Error(`API request failed: ${response.statusText}`);
       }
 
       const data = await response.json();
-      const jobId = data.id;
-
-      if (!jobId) {
-        throw new Error("No job ID returned from RunPod API");
-      }
-
-      console.log("Job ID:", jobId);
-      const statusUrl = `https://api.runpod.ai/v2/${endpointId}/status/${jobId}`;
-      let jobStatus = "IN_PROGRESS";
-      let output = null;
-
-      while (jobStatus === "IN_PROGRESS" || jobStatus === "IN_QUEUE") {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        const statusResponse = await fetch(statusUrl, {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        });
-
-        if (!statusResponse.ok) {
-          throw new Error(`Status check failed: ${statusResponse.statusText}`);
-        }
-
-        const statusData = await statusResponse.json();
-        console.log("Status Data:", statusData);
-        jobStatus = statusData.status;
-
-        if (jobStatus === "COMPLETED") {
-          output = statusData.output;
-          console.log("Output:", output);
-          break;
-        } else if (jobStatus === "FAILED" || jobStatus === "CANCELLED") {
-          throw new Error(`Job failed with status: ${jobStatus}`);
-        }
-      }
+      console.log("API Response:", data);
 
       clearInterval(interval);
       setProgress(100);
 
-      if (output) {
-        let imageSrc;
-        if (output.image_url) {
-          imageSrc = output.image_url;
-        } else if (output.image) {
-          imageSrc = output.image;
-        } else if (typeof output === "string" && output.startsWith("data:image")) {
-          imageSrc = output;
-        } else if (typeof output === "string") {
-          imageSrc = `data:image/png;base64,${output}`;
-        } else {
-          throw new Error("Unexpected output format from RunPod");
-        }
-
-        const content = {
+      let content;
+      if (data.error) {
+        throw new Error(data.error);
+      } else if (contentType === "image" && data.image_base64) {
+        content = {
           type: "image",
-          src: imageSrc,
+          src: `data:image/png;base64,${data.image_base64}`,
           title: prompt,
         };
-        console.log("Generated Content:", content);
-        setGeneratedContent(content);
-        const stored = await storeGeneratedContent(content);
-        if (!stored) {
-          console.warn("Failed to store content in Firestore. Showing in modal but not redirecting.");
-          return;
-        }
-        setTimeout(() => closeGenerationModal(), 1000); // Delay redirect for user to see the image
+      } else if (contentType === "video" && data.video_base64) {
+        content = {
+          type: "video",
+          src: `data:video/mp4;base64,${data.video_base64}`,
+          title: prompt,
+        };
+      } else if (contentType === "audio" && data.audio_base64) {
+        content = {
+          type: "audio",
+          src: `data:audio/wav;base64,${data.audio_base64}`,
+          title: prompt,
+        };
       } else {
-        throw new Error("No output received from RunPod");
+        throw new Error("Unexpected response format");
       }
+
+      setGeneratedContent(content);
+      const stored = await storeGeneratedContent(content);
+      if (!stored) {
+        console.warn("Failed to store content in Firestore. Showing in modal but not redirecting.");
+        return;
+      }
+      setTimeout(() => closeGenerationModal(), 1000);
     } catch (error) {
       console.error("Generation error:", error);
       clearInterval(interval);
       setProgress(100);
 
+      const fallback = fallbackMedia[contentType] || fallbackMedia.image;
       const content = {
-        ...fallbackMedia.image,
-        title: `Fallback Image for ${prompt}`,
+        ...fallback,
+        title: `Fallback ${contentType} for ${prompt}`,
       };
       setGeneratedContent(content);
       const stored = await storeGeneratedContent(content);
@@ -355,6 +321,18 @@ export default function MainContent({ onGenerateClick }) {
                     alt={generatedContent.title}
                     className={styles.generationPreviewImage}
                   />
+                ) : generatedContent.type === "video" ? (
+                  <video
+                    src={generatedContent.src}
+                    controls
+                    className={styles.generationPreviewVideo}
+                  />
+                ) : generatedContent.type === "audio" ? (
+                  <audio
+                    src={generatedContent.src}
+                    controls
+                    className={styles.generationPreviewAudio}
+                  />
                 ) : (
                   <p>Unsupported content type</p>
                 )
@@ -364,7 +342,7 @@ export default function MainContent({ onGenerateClick }) {
               <div className={styles.generationActions}>
                 <a
                   href={generatedContent?.src}
-                  download={`${generatedContent?.title}.png`}
+                  download={`${generatedContent?.title}.${generatedContent.type === "image" ? "png" : generatedContent.type === "video" ? "mp4" : "wav"}`}
                   className={styles.downloadButton}
                 >
                   Download

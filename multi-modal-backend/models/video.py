@@ -1,19 +1,37 @@
-from diffusers import DiffusionPipeline
 import torch
+from transformers import pipeline
 import base64
-import imageio
+import io
+import os
 
-pipe = DiffusionPipeline.from_pretrained(
-    "Wan-AI/Wan2.1-T2V-14B",
-    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-).to("cuda" if torch.cuda.is_available() else "cpu")
+def load_video_model():
+    try:
+        pipe = pipeline(
+            "text-to-video",
+            model="Wan-AI/Wan2.1-T2V-14B",
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            token=os.getenv("HUGGINGFACE_TOKEN")
+        )
+        return pipe
+    except Exception as e:
+        raise Exception(f"Failed to load video model: {str(e)}")
+
+pipe = load_video_model()
 
 def generate_video(prompt: str):
-    video_frames = pipe(prompt, num_frames=16).frames
-    writer = imageio.get_writer("video.mp4", fps=8)
-    for frame in video_frames:
-        writer.append_data(frame)
-    writer.close()
-    with open("video.mp4", "rb") as f:
-        video_b64 = base64.b64encode(f.read()).decode("utf-8")
-    return {"video_base64": video_b64}
+    try:
+        video_data = pipe(prompt, num_frames=8)
+        buffer = io.BytesIO()
+        for frame in video_data["frames"]:
+            buffer.write(frame.tobytes())
+        video_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        return {"video_base64": video_b64}
+    except Exception as e:
+        return {"error": f"Video generation failed: {str(e)}"}
+
+def health_check():
+    try:
+        _ = pipe("test prompt", num_frames=1)
+        return {"status": "healthy"}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}

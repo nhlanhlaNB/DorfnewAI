@@ -1,26 +1,18 @@
-/* app/subscription/page.tsx */
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
-import {
-  getAuth,
-  onAuthStateChanged,
-  User,
-} from 'firebase/auth';
-
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import styles from '../../styles/SubscriptionPage.module.css';
 
-/* ──────────────────────────────────────────────────────────── */
-/* Plans                                                       */
-/* ──────────────────────────────────────────────────────────── */
 interface Plan {
   title: string;
   price: string;
   description: string;
   features: string[];
-  paypalPlanId: string;        // PayPal **subscription plan** ID
+  paypalPlanId: string;
   popular?: boolean;
 }
 
@@ -28,8 +20,7 @@ const plans: Plan[] = [
   {
     title: 'Individual',
     price: '$10',
-    description:
-      'Ideal for solo creators who want to unlock the full potential of the platform.',
+    description: 'Ideal for solo creators who want to unlock the full potential of the platform.',
     features: [
       'Ad‑free experience',
       '10 GB storage for uploads',
@@ -37,13 +28,12 @@ const plans: Plan[] = [
       'Advanced analytics',
       'Priority e‑mail support',
     ],
-    paypalPlanId: 'P-4SW2058640943662UNBTJI6Y',     // ← your PayPal plan id
+    paypalPlanId: 'P-4SW2058640943662UNBTJI6Y',
   },
   {
     title: 'Business',
     price: '$35',
-    description:
-      'Designed for businesses needing advanced features and team collaboration.',
+    description: 'Designed for businesses needing advanced features and team collaboration.',
     features: [
       'Ad‑free experience',
       '50 GB storage for uploads',
@@ -58,8 +48,7 @@ const plans: Plan[] = [
   {
     title: 'Family',
     price: '$25',
-    description:
-      'Great for families or small groups, with shared access for up to 4 members.',
+    description: 'Great for families or small groups, with shared access for up to 4 members.',
     features: [
       'Ad‑free experience',
       '20 GB storage for uploads',
@@ -68,20 +57,18 @@ const plans: Plan[] = [
       'Shared access for 4 members',
       'Priority e‑mail support',
     ],
-    paypalPlanId: 'P-3CS59433TT1532629NBT25SQ',         // ← your PayPal plan id
+    paypalPlanId: 'P-3CS59433TT1532629NBT25SQ',
   },
 ];
 
-/* ──────────────────────────────────────────────────────────── */
-/* Component                                                   */
-/* ──────────────────────────────────────────────────────────── */
 export default function SubscriptionPage() {
   const router = useRouter();
-
-  /* Auth gate (no DB) ─────────────────────────────────────── */
-  const auth                 = getAuth();
+  const auth = getAuth();
+  const db = getFirestore();
   const [loading, setLoading] = useState(true);
-  const [user, setUser]       = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [paypalReady, setPaypalReady] = useState(false);
+  const rendered = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     const off = onAuthStateChanged(auth, (u) => {
@@ -94,10 +81,6 @@ export default function SubscriptionPage() {
     });
     return () => off();
   }, [auth, router]);
-
-  /* PayPal Buttons ────────────────────────────────────────── */
-  const [paypalReady, setPaypalReady] = useState(false);
-  const rendered = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!paypalReady || !user) return;
@@ -120,19 +103,36 @@ export default function SubscriptionPage() {
           },
           createSubscription: (_data: any, actions: any) =>
             actions.subscription.create({ plan_id: plan.paypalPlanId }),
-          onApprove: (data: any) => {
-            alert(
-              `Thanks for subscribing!\nSubscription ID: ${data.subscriptionID}`,
-            );
+          onApprove: async (data: any) => {
+            try {
+              // Update Firestore with subscription details
+              const userDocRef = doc(db, "app_user", user.email);
+              await setDoc(userDocRef, {
+                subscribed: true,
+                planId: plan.paypalPlanId,
+                subscriptionId: data.subscriptionID,
+                price: plan.price.replace('$', ''), // e.g., "10.00"
+                updatedAt: serverTimestamp(),
+              }, { merge: true });
+
+              alert(`Thanks for subscribing!\nSubscription ID: ${data.subscriptionID}`);
+              router.push('/dashboard'); // Redirect to dashboard after successful subscription
+            } catch (error) {
+              console.error("Error updating subscription:", error);
+              alert("Subscription successful, but failed to update user data. Please contact support.");
+            }
+          },
+          onError: (err: any) => {
+            console.error("PayPal subscription error:", err);
+            alert("An error occurred during subscription. Please try again.");
           },
         }).render(container);
 
-        rendered.current[plan.paypalPlanId] = true; // remember
+        rendered.current[plan.paypalPlanId] = true;
       }
     });
-  }, [paypalReady, user]);
+  }, [paypalReady, user, db, router]);
 
-  /* Loading splash ────────────────────────────────────────── */
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -142,18 +142,14 @@ export default function SubscriptionPage() {
     );
   }
 
-  /* UI ─────────────────────────────────────────────────────── */
   return (
     <>
-      {/* PayPal Subscriptions SDK – loaded exactly once */}
       <Script
         src="https://www.paypal.com/sdk/js?client-id=AV4Blmjwp981Sl85YsvLyCpdJC1qCdRnZ-Y6jzQNcFtEr9laPnG8zt3fQffQpBUmUzEo0UUlBd_McFGe&vault=true&intent=subscription"
         strategy="afterInteractive"
         data-sdk-integration-source="button-factory"
         onLoad={() => setPaypalReady(true)}
       />
-
-      {/* page head tags */}
       <head>
         <title>Subscription Plans</title>
         <meta
@@ -165,9 +161,7 @@ export default function SubscriptionPage() {
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
         />
       </head>
-
       <div className={styles.pageWrapper}>
-        {/* header */}
         <header className={styles.header}>
           <button
             className={styles.closeButton}
@@ -177,15 +171,12 @@ export default function SubscriptionPage() {
             <i className="fas fa-times" />
           </button>
         </header>
-
-        {/* main */}
         <main className={styles.main}>
           <h1 className={styles.pageTitle}>Unlock Premium Features</h1>
           <p className={styles.pageSubtitle}>
             Choose the plan that best suits your needs and start creating
             without limits!
           </p>
-
           <div className={styles.pricingContainer}>
             {plans.map((plan) => (
               <div
@@ -197,14 +188,12 @@ export default function SubscriptionPage() {
                 {plan.popular && (
                   <div className={styles.popularBadge}>Most Popular</div>
                 )}
-
                 <h2 className={styles.planTitle}>{plan.title}</h2>
                 <p className={styles.planPrice}>
                   {plan.price}
                   <span>/month</span>
                 </p>
                 <p className={styles.planDescription}>{plan.description}</p>
-
                 <ul className={styles.planFeatures}>
                   {plan.features.map((f) => (
                     <li key={f}>
@@ -212,8 +201,6 @@ export default function SubscriptionPage() {
                     </li>
                   ))}
                 </ul>
-
-                {/* PayPal button mounts here */}
                 <div
                   id={`paypal-button-container-${plan.paypalPlanId}`}
                   className={styles.paypalButtonContainer}
@@ -222,11 +209,9 @@ export default function SubscriptionPage() {
             ))}
           </div>
         </main>
-
-        {/* footer */}
         <footer className={styles.footer}>
           <p>
-            <i className="fas fa-copyright" /> {new Date().getFullYear()} 
+            <i className="fas fa-copyright" /> {new Date().getFullYear()} 
             DorfNewAI. All rights reserved.
           </p>
           <p className={styles.termsLink}>
@@ -243,16 +228,4 @@ export default function SubscriptionPage() {
       </div>
     </>
   );
-}
-function getPriceFromPlanId(planId: string): string {
-  switch (planId) {
-    case 'REPLACE_ME_INDIVIDUAL':
-      return '10.00';
-    case 'P-4SW2058640943662UNBTJI6Y': // real ID you provided
-      return '35.00';
-    case 'REPLACE_ME_FAMILY':
-      return '25.00';
-    default:
-      throw new Error(`Unknown plan ID: ${planId}`);
-  }
 }
