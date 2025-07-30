@@ -1,9 +1,11 @@
+
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { app } from "../lib/firebase";
 import styles from "../styles/Header.module.css";
+import mainStyles from "../styles/MainContent.module.css"; // Import MainContent styles for popup
 import { useRouter } from "next/navigation";
 
 export default function Header({ onGenerateClick }) {
@@ -11,6 +13,7 @@ export default function Header({ onGenerateClick }) {
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState(null);
   const [showPaymentPrompt, setShowPaymentPrompt] = useState(false);
+  const [showMediaTypePrompt, setShowMediaTypePrompt] = useState(false);
   const searchInputRef = useRef(null);
   const router = useRouter();
 
@@ -20,6 +23,13 @@ export default function Header({ onGenerateClick }) {
 
   // Admin email
   const ADMIN_EMAIL = "nhlanhlabhengu99@gmail.com";
+
+  // Media types for selection
+  const mediaTypes = [
+    { name: "Video", color: "#ff8e53" },
+    { name: "Image", color: "#00ddeb" },
+    { name: "Audio", color: "#7b68ee" },
+  ];
 
   // Fetch user data and subscription status
   useEffect(() => {
@@ -60,7 +70,6 @@ export default function Header({ onGenerateClick }) {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Check payment status before allowing file upload generation
       if (userEmail !== ADMIN_EMAIL) {
         const userDocRef = doc(db, "app_user", userEmail);
         const userSnap = await getDoc(userDocRef);
@@ -89,20 +98,23 @@ export default function Header({ onGenerateClick }) {
   };
 
   const handleGenerate = async () => {
-    const prompt = searchInputRef.current?.value.trim() || "";
-    console.log("Generate clicked with prompt:", prompt);
+    setShowMediaTypePrompt(true);
+  };
 
-    // Allow admin to bypass payment check
+  const handleMediaTypeSelect = async (mediaType) => {
+    const prompt = searchInputRef.current?.value.trim() || "";
+    console.log(`Selected media type: ${mediaType}, with prompt: ${prompt}`);
+    setShowMediaTypePrompt(false);
+
     if (userEmail === ADMIN_EMAIL) {
       if (onGenerateClick?.current) {
-        onGenerateClick.current(prompt);
+        onGenerateClick.current(`${prompt} ${mediaType.toLowerCase()}`);
       } else {
         console.error("onGenerateClick ref is not defined");
       }
       return;
     }
 
-    // Check subscription status for non-admin users
     try {
       const userDocRef = doc(db, "app_user", userEmail);
       const userSnap = await getDoc(userDocRef);
@@ -114,7 +126,7 @@ export default function Header({ onGenerateClick }) {
       }
 
       if (onGenerateClick?.current) {
-        onGenerateClick.current(prompt);
+        onGenerateClick.current(`${prompt} ${mediaType.toLowerCase()}`);
       } else {
         console.error("onGenerateClick ref is not defined");
       }
@@ -137,6 +149,10 @@ export default function Header({ onGenerateClick }) {
 
   const closePaymentPrompt = () => {
     setShowPaymentPrompt(false);
+  };
+
+  const closeMediaTypePrompt = () => {
+    setShowMediaTypePrompt(false);
   };
 
   return (
@@ -163,6 +179,31 @@ export default function Header({ onGenerateClick }) {
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {showMediaTypePrompt && (
+        <div className={mainStyles.generationModal}>
+          <div className={mainStyles.generationBox}>
+            <h3>Select Media Type</h3>
+            <div className={mainStyles.mediaTypeGrid}>
+              {mediaTypes.map((type) => (
+                <div
+                  key={type.name}
+                  className={mainStyles.topicCard}
+                  style={{ backgroundColor: type.color }}
+                  onClick={() => handleMediaTypeSelect(type.name)}
+                >
+                  {type.name}
+                </div>
+              ))}
+            </div>
+            <button
+              className={mainStyles.closeButton}
+              onClick={closeMediaTypePrompt}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

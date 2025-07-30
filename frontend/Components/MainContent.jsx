@@ -118,12 +118,60 @@ export default function MainContent({ onGenerateClick }) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [generatedContent, setGeneratedContent] = useState(null);
+  const [sportsNews, setSportsNews] = useState([]);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   useEffect(() => {
     if (onGenerateClick) {
       onGenerateClick.current = handleGenerateClick;
       console.log("handleGenerateClick assigned to onGenerateClick ref");
     }
+
+    // Fetch sports news
+    const fetchSportsNews = async () => {
+      try {
+        // Fetch global sports news with emphasis on South Africa and Nigeria
+        const globalResponse = await fetch(
+          `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!globalResponse.ok) throw new Error(`Global fetch failed: ${globalResponse.statusText}`);
+        const globalData = await globalResponse.json();
+        let articles = globalData.status === "ok" ? globalData.articles : [];
+
+        // Fetch country-specific news for South Africa
+        const zaResponse = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!zaResponse.ok) throw new Error(`South Africa fetch failed: ${zaResponse.statusText}`);
+        const zaData = await zaResponse.json();
+        if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
+
+        // Fetch country-specific news for Nigeria
+        const ngResponse = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!ngResponse.ok) throw new Error(`Nigeria fetch failed: ${ngResponse.statusText}`);
+        const ngData = await ngResponse.json();
+        if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
+
+        // Deduplicate articles by URL
+        const uniqueArticles = Array.from(
+          new Map(articles.map((article) => [article.url, article])).values()
+        );
+
+        // Filter out articles with null or empty titles and limit to 6
+        const validArticles = uniqueArticles
+          .filter((article) => article.title && article.title !== "[Removed]")
+          .slice(0, 30);
+
+        setSportsNews(validArticles);
+      } catch (error) {
+        console.error("Error fetching sports news:", error.message);
+        setSportsNews([]);
+      }
+    };
+
+    fetchSportsNews();
   }, [onGenerateClick]);
 
   const handleUnsubscribe = (channelName) => {
@@ -148,7 +196,10 @@ export default function MainContent({ onGenerateClick }) {
     setIsGenerating(false);
     setProgress(0);
     setGeneratedContent(null);
-    router.push("../library?newContent=true");
+  };
+
+  const closeArticleModal = () => {
+    setSelectedArticle(null);
   };
 
   const storeGeneratedContent = async (content) => {
@@ -267,10 +318,9 @@ export default function MainContent({ onGenerateClick }) {
       setGeneratedContent(content);
       const stored = await storeGeneratedContent(content);
       if (!stored) {
-        console.warn("Failed to store content in Firestore. Showing in modal but not redirecting.");
+        console.warn("Failed to store content in Firestore. Showing in modal but not closing.");
         return;
       }
-      setTimeout(() => closeGenerationModal(), 1000);
     } catch (error) {
       console.error("Generation error:", error);
       clearInterval(interval);
@@ -284,10 +334,9 @@ export default function MainContent({ onGenerateClick }) {
       setGeneratedContent(content);
       const stored = await storeGeneratedContent(content);
       if (!stored) {
-        console.warn("Failed to store fallback content in Firestore. Showing in modal but not redirecting.");
+        console.warn("Failed to store fallback content in Firestore. Showing in modal but not closing.");
         return;
       }
-      setTimeout(() => closeGenerationModal(), 1000);
     }
   };
 
@@ -351,10 +400,51 @@ export default function MainContent({ onGenerateClick }) {
                   className={styles.closeButton}
                   onClick={closeGenerationModal}
                 >
-                  View in Library
+                  Close
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {selectedArticle && (
+        <div className={styles.articleModal}>
+          <div className={styles.articleBox}>
+            <h3>{selectedArticle.title}</h3>
+            {selectedArticle.urlToImage && (
+              <img
+                src={selectedArticle.urlToImage}
+                alt={selectedArticle.title}
+                className={styles.articleImage}
+              />
+            )}
+            <p className={styles.articleSource}>
+              Source: {selectedArticle.source.name}
+            </p>
+            <p className={styles.articlePublished}>
+              Published: {new Date(selectedArticle.publishedAt).toLocaleString()}
+            </p>
+            <p className={styles.articleDescription}>
+              {selectedArticle.description || "No description available."}
+            </p>
+            <p className={styles.articleContent}>
+              {selectedArticle.content || "No additional content available."}
+            </p>
+            <a
+              href={selectedArticle.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.readMoreButton}
+            >
+              Read Full Article
+            </a>
+            <button
+              className={styles.closeButton}
+              onClick={closeArticleModal}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -424,6 +514,32 @@ export default function MainContent({ onGenerateClick }) {
           </button>
         </section>
       )}
+
+      <section className={styles.sportsNews}>
+        <h2>Sports News</h2>
+        {sportsNews.length > 0 ? (
+          <div className={styles.newsGrid}>
+            {sportsNews.map((article, index) => (
+              <div
+                key={index}
+                className={styles.newsCard}
+                onClick={() => setSelectedArticle(article)}
+              >
+                {article.urlToImage && (
+                  <img
+                    src={article.urlToImage}
+                    alt={article.title}
+                    className={styles.newsImage}
+                  />
+                )}
+                <p className={styles.newsTitle}>{article.title}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className={styles.noNews}>No sports news available.</p>
+        )}
+      </section>
 
       <section className={styles.yourSubscriptions}>
         <h2>Your Subscriptions</h2>

@@ -1,3 +1,4 @@
+
 .mainContent {
   padding: 30px;
   background: #1e1e2f;
@@ -8,7 +9,8 @@
 
 .exploreTopics h2,
 .yourSubscriptions h2,
-.mediaDisplay h3 {
+.mediaDisplay h3,
+.sportsNews h2 {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 15px;
@@ -191,7 +193,6 @@
   padding: 40px;
   border-radius: 20px;
   width: 600px;
-  height: 600px;
   max-width: 95%;
   max-height: 95%;
   text-align: center;
@@ -269,11 +270,146 @@
   margin-top: 25px;
 }
 
+.sportsNews {
+  margin-top: 30px;
+}
+
+.newsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.newsCard {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.newsCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.newsImage {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.newsTitle {
+  font-size: 12px;
+  color: #b0b0c0;
+  margin: 0;
+}
+
+.noNews {
+  font-size: 14px;
+  color: #b0b0c0;
+  text-align: center;
+  padding: 15px;
+}
+
+.articleModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.articleBox {
+  background: #2a2a3a;
+  padding: 20px;
+  border-radius: 15px;
+  width: 600px;
+  max-width: 95%;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+  animation: fadeIn 0.4s ease;
+}
+
+.articleBox h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 15px;
+}
+
+.articleImage {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.articleSource {
+  font-size: 14px;
+  color: #b0b0c0;
+  margin-bottom: 10px;
+}
+
+.articlePublished {
+  font-size: 14px;
+  color: #b0b0c0;
+  margin-bottom: 15px;
+}
+
+.articleDescription {
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 15px;
+}
+
+.articleContent {
+  font-size: 14px;
+  color: #b0b0c0;
+  margin-bottom: 15px;
+}
+
+.readMoreButton {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #00ddeb;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.readMoreButton:hover {
+  background: #7b68ee;
+  transform: scale(1.05);
+}
+
+.mediaTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .generationBox {
     width: 500px;
-    height: 500px;
     padding: 30px;
   }
   
@@ -281,21 +417,34 @@
     width: 400px;
     height: 400px;
   }
+
+  .articleBox {
+    width: 500px;
+    padding: 15px;
+  }
 }
 
 @media (max-width: 480px) {
   .generationBox {
     width: 350px;
-    height: 350px;
     padding: 20px;
-  }
-  
-  .generationBox h3 {
-    font-size: 22px;
   }
   
   .generationPreview {
     width: 280px;
     height: 280px;
+  }
+
+  .articleBox {
+    width: 300px;
+    padding: 10px;
+  }
+
+  .articleBox h3 {
+    font-size: 18px;
+  }
+
+  .articleImage {
+    max-height: 200px;
   }
 }
