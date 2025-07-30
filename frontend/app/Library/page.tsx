@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -94,7 +95,7 @@ export default function Library() {
         setLibraryContent(content);
 
         // Check for new content
-        const urlParams = new URLSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
         if (urlParams.get("newContent") === "true") {
           toast({
             title: "Content Generated",
@@ -151,7 +152,7 @@ export default function Library() {
 
   return (
     <div className={styles.container}>
-      <Header onGenerateClick={generateClickRef} />
+      <Header onGenerateClick={generateClickRef} hideSearch={true} />
 
       <main className={styles.mainContent}>
         <div className={styles.headerSection}>

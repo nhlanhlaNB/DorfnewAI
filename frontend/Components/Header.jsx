@@ -5,10 +5,10 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { app } from "../lib/firebase";
 import styles from "../styles/Header.module.css";
-import mainStyles from "../styles/MainContent.module.css"; // Import MainContent styles for popup
+import mainStyles from "../styles/MainContent.module.css";
 import { useRouter } from "next/navigation";
 
-export default function Header({ onGenerateClick }) {
+export default function Header({ onGenerateClick, hideSearch = false }) {
   const fileInputRef = useRef(null);
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState(null);
@@ -17,21 +17,17 @@ export default function Header({ onGenerateClick }) {
   const searchInputRef = useRef(null);
   const router = useRouter();
 
-  // Firebase instances
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Admin email
   const ADMIN_EMAIL = "nhlanhlabhengu99@gmail.com";
 
-  // Media types for selection
   const mediaTypes = [
     { name: "Video", color: "#ff8e53" },
     { name: "Image", color: "#00ddeb" },
     { name: "Audio", color: "#7b68ee" },
   ];
 
-  // Fetch user data and subscription status
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -207,31 +203,33 @@ export default function Header({ onGenerateClick }) {
           </div>
         </div>
       )}
-      <div className={styles.searchContainer}>
-        <button
-          className={styles.uploadButton}
-          onClick={handleUploadClick}
-          title="Upload a file to generate content"
-        >
-          <i className="fas fa-cloud-upload-alt"></i>
-        </button>
-        <input
-          type="file"
-          ref={fileInputRef}
-          className={styles.fileInput}
-          accept="image/*,video/*,audio/*"
-          onChange={handleFileChange}
-        />
-        <input
-          type="text"
-          ref={searchInputRef}
-          placeholder="Generate Videos, Images, Music — Describe or Upload!"
-          className={styles.searchBar}
-        />
-        <button className={styles.generateButton} onClick={handleGenerate}>
-          Generate
-        </button>
-      </div>
+      {!hideSearch && (
+        <div className={styles.searchContainer}>
+          <button
+            className={styles.uploadButton}
+            onClick={handleUploadClick}
+            title="Upload a file to generate content"
+          >
+            <i className="fas fa-cloud-upload-alt"></i>
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className={styles.fileInput}
+            accept="image/*,video/*,audio/*"
+            onChange={handleFileChange}
+          />
+          <input
+            type="text"
+            ref={searchInputRef}
+            placeholder="Generate Videos, Images, Music — Describe or Upload!"
+            className={styles.searchBar}
+          />
+          <button className={styles.generateButton} onClick={handleGenerate}>
+            Generate
+          </button>
+        </div>
+      )}
       <div className={styles.userContainer}>
         <div className={styles.userGreeting}>
           Hello <span className={styles.userName}>{userName}</span>
