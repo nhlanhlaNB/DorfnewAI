@@ -58,6 +58,21 @@ export default function MainContent({ onGenerateClick }) {
         src: "https://videos.pexels.com/video-files/1409899/1409899-hd_1920_1080_30fps.mp4",
         title: "Nature Video 3",
       },
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/1540394/1540394-hd_1920_1080_30fps.mp4",
+        title: "Soccer Match Highlights",
+      },
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/2855927/2855927-hd_1920_1080_30fps.mp4",
+        title: "Basketball Dunk Compilation",
+      },
+      {
+        type: "video",
+        src: "https://videos.pexels.com/video-files/1721278/1721278-hd_1920_1080_30fps.mp4",
+        title: "Rugby Action Moments",
+      },
     ],
     Images: [
       {
@@ -96,11 +111,18 @@ export default function MainContent({ onGenerateClick }) {
   });
 
   const fallbackMedia = {
-    image: {
-      type: "image",
-      src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-      title: "Fallback Tiger Image",
-    },
+    image: [
+      {
+        type: "image",
+        src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        title: "Fallback Wildlife Image 1",
+      },
+      {
+        type: "image",
+        src: "https://pics.craiyon.com/2023-10-31/93234f8584254bf88c6d27430f35cba2.webp",
+        title: "Fallback Wildlife Image 2",
+      },
+    ],
     video: {
       type: "video",
       src: "https://youtu.be/Wz0jbPIWU30",
@@ -127,10 +149,8 @@ export default function MainContent({ onGenerateClick }) {
       console.log("handleGenerateClick assigned to onGenerateClick ref");
     }
 
-    // Fetch sports news
     const fetchSportsNews = async () => {
       try {
-        // Fetch global sports news with emphasis on South Africa and Nigeria
         const globalResponse = await fetch(
           `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
@@ -138,7 +158,6 @@ export default function MainContent({ onGenerateClick }) {
         const globalData = await globalResponse.json();
         let articles = globalData.status === "ok" ? globalData.articles : [];
 
-        // Fetch country-specific news for South Africa
         const zaResponse = await fetch(
           `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
@@ -146,7 +165,6 @@ export default function MainContent({ onGenerateClick }) {
         const zaData = await zaResponse.json();
         if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
 
-        // Fetch country-specific news for Nigeria
         const ngResponse = await fetch(
           `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
@@ -154,12 +172,10 @@ export default function MainContent({ onGenerateClick }) {
         const ngData = await ngResponse.json();
         if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
 
-        // Deduplicate articles by URL
         const uniqueArticles = Array.from(
           new Map(articles.map((article) => [article.url, article])).values()
         );
 
-        // Filter out articles with null or empty titles and limit to 6
         const validArticles = uniqueArticles
           .filter((article) => article.title && article.title !== "[Removed]")
           .slice(0, 30);
@@ -211,7 +227,7 @@ export default function MainContent({ onGenerateClick }) {
     }
 
     try {
-      const docId = `${user.uid}_${Date.now()}`; // Unique ID for the document
+      const docId = `${user.uid}_${Date.now()}`;
       await setDoc(doc(db, "library", docId), {
         userId: user.uid,
         type: content.type,
@@ -255,87 +271,153 @@ export default function MainContent({ onGenerateClick }) {
 
     const contentType = getContentTypeFromPrompt(prompt);
     const endpointMap = {
-      image: "https://<endpoint-id>.runpod.io/generate/image1",
+      image: [
+        "https://<endpoint-id>.runpod.io/generate/image1",
+        "https://<endpoint-id>.runpod.io/generate/image2",
+      ],
       video: "https://<endpoint-id>.runpod.io/generate/video",
       audio: "https://<endpoint-id>.runpod.io/generate/audio",
     };
-    const endpointUrl = endpointMap[contentType] || endpointMap["image"]; // Default to image if unsupported
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) {
-          clearInterval(interval);
-          return 95;
-        }
-        return prev + 5;
-      });
-    }, 200);
+    if (contentType === "image") {
+      // Simulate generating two images using fallback images
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) {
+            clearInterval(interval);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 200);
 
-    try {
-      const response = await fetch(endpointUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
-      });
+      try {
+        // Since placeholder URLs are not functional, use fallback images
+        clearInterval(interval);
+        setProgress(100);
 
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      clearInterval(interval);
-      setProgress(100);
-
-      let content;
-      if (data.error) {
-        throw new Error(data.error);
-      } else if (contentType === "image" && data.image_base64) {
-        content = {
+        const content = {
           type: "image",
-          src: `data:image/png;base64,${data.image_base64}`,
-          title: prompt,
+          items: [
+            {
+              src: fallbackMedia.image[0].src,
+              title: `Generated Image 1: ${prompt}`,
+            },
+            {
+              src: fallbackMedia.image[1].src,
+              title: `Generated Image 2: ${prompt}`,
+            },
+          ],
         };
-      } else if (contentType === "video" && data.video_base64) {
-        content = {
-          type: "video",
-          src: `data:video/mp4;base64,${data.video_base64}`,
-          title: prompt,
-        };
-      } else if (contentType === "audio" && data.audio_base64) {
-        content = {
-          type: "audio",
-          src: `data:audio/wav;base64,${data.audio_base64}`,
-          title: prompt,
-        };
-      } else {
-        throw new Error("Unexpected response format");
-      }
 
-      setGeneratedContent(content);
-      const stored = await storeGeneratedContent(content);
-      if (!stored) {
-        console.warn("Failed to store content in Firestore. Showing in modal but not closing.");
-        return;
-      }
-    } catch (error) {
-      console.error("Generation error:", error);
-      clearInterval(interval);
-      setProgress(100);
+        setGeneratedContent(content);
+        // Store both images
+        for (const item of content.items) {
+          const stored = await storeGeneratedContent({ ...item, type: "image" });
+          if (!stored) {
+            console.warn("Failed to store content in Firestore.");
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Generation error:", error);
+        clearInterval(interval);
+        setProgress(100);
 
-      const fallback = fallbackMedia[contentType] || fallbackMedia.image;
-      const content = {
-        ...fallback,
-        title: `Fallback ${contentType} for ${prompt}`,
-      };
-      setGeneratedContent(content);
-      const stored = await storeGeneratedContent(content);
-      if (!stored) {
-        console.warn("Failed to store fallback content in Firestore. Showing in modal but not closing.");
-        return;
+        const content = {
+          type: "image",
+          items: [
+            {
+              src: fallbackMedia.image[0].src,
+              title: `Fallback Image 1 for ${prompt}`,
+            },
+            {
+              src: fallbackMedia.image[1].src,
+              title: `Fallback Image 2 for ${prompt}`,
+            },
+          ],
+        };
+        setGeneratedContent(content);
+        for (const item of content.items) {
+          const stored = await storeGeneratedContent({ ...item, type: "image" });
+          if (!stored) {
+            console.warn("Failed to store fallback content in Firestore.");
+            return;
+          }
+        }
+      }
+    } else {
+      const endpointUrl = endpointMap[contentType] || endpointMap["image"][0];
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) {
+            clearInterval(interval);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 200);
+
+      try {
+        const response = await fetch(endpointUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ prompt }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        clearInterval(interval);
+        setProgress(100);
+
+        let content;
+        if (data.error) {
+          throw new Error(data.error);
+        } else if (contentType === "video" && data.video_base64) {
+          content = {
+            type: "video",
+            src: `data:video/mp4;base64,${data.video_base64}`,
+            title: prompt,
+          };
+        } else if (contentType === "audio" && data.audio_base64) {
+          content = {
+            type: "audio",
+            src: `data:audio/wav;base64,${data.audio_base64}`,
+            title: prompt,
+          };
+        } else {
+          throw new Error("Unexpected response format");
+        }
+
+        setGeneratedContent(content);
+        const stored = await storeGeneratedContent(content);
+        if (!stored) {
+          console.warn("Failed to store content in Firestore.");
+          return;
+        }
+      } catch (error) {
+        console.error("Generation error:", error);
+        clearInterval(interval);
+        setProgress(100);
+
+        const fallback = fallbackMedia[contentType] || fallbackMedia.image[0];
+        const content = {
+          ...fallback,
+          title: `Fallback ${contentType} for ${prompt}`,
+        };
+        setGeneratedContent(content);
+        const stored = await storeGeneratedContent(content);
+        if (!stored) {
+          console.warn("Failed to store fallback content in Firestore.");
+          return;
+        }
       }
     }
   };
@@ -365,22 +447,31 @@ export default function MainContent({ onGenerateClick }) {
               ></div>
               {progress >= 100 && generatedContent && (
                 generatedContent.type === "image" ? (
-                  <img
-                    src={generatedContent.src}
-                    alt={generatedContent.title}
-                    className={styles.generationPreviewImage}
-                  />
+                  <div className={styles.imageContainer}>
+                    {generatedContent.items.map((item, index) => (
+                      <div key={index} className={styles.imageWrapper}>
+                        <img
+                          src={item.src}
+                          alt={item.title}
+                          className={styles.generationPreviewImage}
+                        />
+                        <p className={styles.imageTitle}>{item.title}</p>
+                      </div>
+                    ))}
+                  </div>
                 ) : generatedContent.type === "video" ? (
                   <video
                     src={generatedContent.src}
                     controls
                     className={styles.generationPreviewVideo}
+                    title={generatedContent.title}
                   />
                 ) : generatedContent.type === "audio" ? (
                   <audio
                     src={generatedContent.src}
                     controls
                     className={styles.generationPreviewAudio}
+                    title={generatedContent.title}
                   />
                 ) : (
                   <p>Unsupported content type</p>
@@ -389,13 +480,26 @@ export default function MainContent({ onGenerateClick }) {
             </div>
             {progress >= 100 && (
               <div className={styles.generationActions}>
-                <a
-                  href={generatedContent?.src}
-                  download={`${generatedContent?.title}.${generatedContent.type === "image" ? "png" : generatedContent.type === "video" ? "mp4" : "wav"}`}
-                  className={styles.downloadButton}
-                >
-                  Download
-                </a>
+                {generatedContent?.type === "image" ? (
+                  generatedContent.items.map((item, index) => (
+                    <a
+                      key={index}
+                      href={item.src}
+                      download={`${item.title}.png`}
+                      className={styles.downloadButton}
+                    >
+                      Download Image {index + 1}
+                    </a>
+                  ))
+                ) : (
+                  <a
+                    href={generatedContent?.src}
+                    download={`${generatedContent?.title}.${generatedContent.type === "video" ? "mp4" : "wav"}`}
+                    className={styles.downloadButton}
+                  >
+                    Download
+                  </a>
+                )}
                 <button
                   className={styles.closeButton}
                   onClick={closeGenerationModal}
