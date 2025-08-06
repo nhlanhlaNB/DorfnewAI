@@ -1,7 +1,7 @@
 # backend/app/models/load_image_models.py
 
 from diffusers import StableDiffusionXLPipeline
-import touch
+import touch               
 
 device = "cuda"
 
