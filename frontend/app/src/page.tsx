@@ -1,7 +1,5 @@
-// app/src/page.tsx
-"use client";
-import LandingPage from "@/src/components/LandingPage";
+import { createRoot } from 'react-dom/client'
+import App from '../src/App';
+import './index.css'
 
-export default function Page() {
-  return <LandingPage />;
-}
+createRoot(document.getElementById("root")!).render(<App />);

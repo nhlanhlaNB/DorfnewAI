@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import spaceshipFrame from '@/assets/spaceship-video-frame.jpg';
+import spaceshipFrame from '@/src/assets/spaceship-video-frame.jpg';
 
 const VideoBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
