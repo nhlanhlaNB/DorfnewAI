@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/Login.module.css";
@@ -15,7 +15,7 @@ export default function Login() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Basic validation
@@ -41,29 +41,33 @@ export default function Login() {
 
       // Redirect to dashboard after successful login
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err: unknown) {
+      console.error("Login error:", err);
       let message = "Login failed. Please try again.";
 
-      switch (error.code) {
-        case "auth/invalid-credential":
-          message = "Invalid email or password";
-          break;
-        case "auth/user-not-found":
-          message = "No account found with this email";
-          break;
-        case "auth/wrong-password":
-          message = "Incorrect password";
-          break;
-        case "auth/too-many-requests":
-          message = "Too many attempts. Try again later or reset your password.";
-          break;
-        case "auth/user-disabled":
-          message = "This account has been disabled";
-          break;
-        case "auth/invalid-email":
-          message = "Please enter a valid email address";
-          break;
+      if (err && typeof err === "object" && "code" in err) {
+        const errorCode = (err as { code: string }).code;
+        switch (errorCode) {
+          case "auth/invalid-credential":
+            message = "Invalid email or password";
+            break;
+          case "auth/user-not-found":
+            message = "No account found with this email";
+            break;
+          case "auth/wrong-password":
+            message = "Incorrect password";
+            break;
+          case "auth/too-many-requests":
+            message =
+              "Too many attempts. Try again later or reset your password.";
+            break;
+          case "auth/user-disabled":
+            message = "This account has been disabled";
+            break;
+          case "auth/invalid-email":
+            message = "Please enter a valid email address";
+            break;
+        }
       }
 
       toast({
@@ -120,11 +124,7 @@ export default function Login() {
             Forgot password?
           </Link>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={styles.button}
-          >
+          <button type="submit" disabled={isLoading} className={styles.button}>
             {isLoading ? (
               <>
                 <svg
@@ -158,7 +158,7 @@ export default function Login() {
         </form>
 
         <p className={styles.signupText}>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className={styles.signupLink}>
             Sign up
           </Link>
@@ -167,3 +167,4 @@ export default function Login() {
     </div>
   );
 }
+
