@@ -13,11 +13,9 @@ export default function MyChannel() {
     router.push("/");
   };
 
-  const handleCreateChannel = (e) => {
+  const handleCreateChannel = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    // Logic to create channel (e.g., API call) would go here
     console.log("Creating channel:", { channelName, channelDescription, isPrivate });
-    // Reset form or redirect after creation
     setChannelName("");
     setChannelDescription("");
     setIsPrivate(false);
@@ -71,7 +69,7 @@ export default function MyChannel() {
                   value={channelDescription}
                   onChange={(e) => setChannelDescription(e.target.value)}
                   placeholder="Describe your channel"
-                  rows="4"
+                  rows={4}
                 />
               </div>
               <div className={styles.formGroup}>

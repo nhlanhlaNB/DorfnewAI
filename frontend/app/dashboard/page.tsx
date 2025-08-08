@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from 'lib/firebase';          // adjust if you placed it elsewhere
 
-import Sidebar from '../../components/Sidebar';
-import Header from '../../components/Header';
-import MainContent from '../../components/MainContent';
+import Sidebar from '../../Components/Sidebar';
+import Header from '../../Components/Header';
+import MainContent from '../../Components/MainContent';
 import styles from '../../styles/Home.module.css';
 
 export default function Home() {

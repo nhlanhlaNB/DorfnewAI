@@ -7,15 +7,31 @@ import { doc, getDoc, collection, query, where, getDocs, deleteDoc } from "fireb
 import { onAuthStateChanged } from "firebase/auth";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
 import styles from "../../styles/Library.module.css";
-import Header from "../../components/Header";
+import Header from '../../Components/Header';
+
+// Define types
+interface ContentItem {
+  id: string;
+  title: string;
+  src: string;
+  type: 'image' | 'video' | 'audio';
+  userId?: string;
+  createdAt?: any;
+}
+
+interface LibraryContent {
+  Images: ContentItem[];
+  Videos: ContentItem[];
+  Audio: ContentItem[];
+}
 
 export default function Library() {
   const router = useRouter();
   const { toast } = useToast();
-  const [userName, setUserName] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [activeTab, setActiveTab] = useState("Images");
-  const [libraryContent, setLibraryContent] = useState({
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<keyof LibraryContent>("Images");
+  const [libraryContent, setLibraryContent] = useState<LibraryContent>({
     Images: [],
     Videos: [],
     Audio: [],
@@ -28,7 +44,7 @@ export default function Library() {
       if (user) {
         setUserId(user.uid);
         try {
-          const userDoc = await getDoc(doc(db, "app_user", user.email));
+          const userDoc = await getDoc(doc(db, "app_user", user.email!));
           if (userDoc.exists()) {
             const displayName = userDoc.data()?.name || user.email?.split('@')[0] || 'User';
             setUserName(displayName);
@@ -62,7 +78,7 @@ export default function Library() {
       }
 
       try {
-        const content = { Images: [], Videos: [], Audio: [] };
+        const content: LibraryContent = { Images: [], Videos: [], Audio: [] };
 
         // Fetch images
         const imagesQuery = query(
@@ -71,7 +87,10 @@ export default function Library() {
           where("type", "==", "image")
         );
         const imagesSnapshot = await getDocs(imagesQuery);
-        content.Images = imagesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        content.Images = imagesSnapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        })) as ContentItem[];
 
         // Fetch videos
         const videosQuery = query(
@@ -80,7 +99,10 @@ export default function Library() {
           where("type", "==", "video")
         );
         const videosSnapshot = await getDocs(videosQuery);
-        content.Videos = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        content.Videos = videosSnapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        })) as ContentItem[];
 
         // Fetch audio
         const audioQuery = query(
@@ -89,7 +111,10 @@ export default function Library() {
           where("type", "==", "audio")
         );
         const audioSnapshot = await getDocs(audioQuery);
-        content.Audio = audioSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        content.Audio = audioSnapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          ...doc.data() 
+        })) as ContentItem[];
 
         console.log("Fetched library content:", content);
         setLibraryContent(content);
@@ -106,7 +131,7 @@ export default function Library() {
         console.error("Error loading library content:", error);
         toast({
           title: "Error",
-          description: "Failed to load library content: " + error.message,
+          description: `Failed to load library content: ${error instanceof Error ? error.message : 'Unknown error'}`,
           variant: "destructive",
         });
       }
@@ -115,11 +140,11 @@ export default function Library() {
     fetchLibraryContent();
   }, [userId, toast]);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: keyof LibraryContent) => {
     setActiveTab(tab);
   };
 
-  const handleDownload = (content) => {
+  const handleDownload = (content: ContentItem) => {
     const link = document.createElement('a');
     link.href = content.src;
     link.download = `${content.title}.${content.type === 'image' ? 'png' : content.type === 'video' ? 'mp4' : 'mp3'}`;
@@ -128,7 +153,7 @@ export default function Library() {
     document.body.removeChild(link);
   };
 
-  const handleDelete = async (content, category) => {
+  const handleDelete = async (content: ContentItem, category: keyof LibraryContent) => {
     try {
       await deleteDoc(doc(db, "library", content.id));
       const updatedContent = {
@@ -144,7 +169,7 @@ export default function Library() {
       console.error("Error deleting content:", error);
       toast({
         title: "Error",
-        description: "Failed to delete content: " + error.message,
+        description: `Failed to delete content: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
@@ -167,6 +192,7 @@ export default function Library() {
             className={`${styles.tabButton} ${activeTab === 'Images' ? styles.activeTab : ''}`}
             onClick={() => handleTabChange('Images')}
             style={{ backgroundColor: '#00ddeb' }}
+            title="View Images"
           >
             <i className="fas fa-image"></i> Images
           </button>
@@ -174,6 +200,7 @@ export default function Library() {
             className={`${styles.tabButton} ${activeTab === 'Videos' ? styles.activeTab : ''}`}
             onClick={() => handleTabChange('Videos')}
             style={{ backgroundColor: '#ff8e53' }}
+            title="View Videos"
           >
             <i className="fas fa-video"></i> Videos
           </button>
@@ -181,6 +208,7 @@ export default function Library() {
             className={`${styles.tabButton} ${activeTab === 'Audio' ? styles.activeTab : ''}`}
             onClick={() => handleTabChange('Audio')}
             style={{ backgroundColor: '#7b68ee' }}
+            title="View Audio"
           >
             <i className="fas fa-music"></i> Audio
           </button>
@@ -188,7 +216,7 @@ export default function Library() {
 
         <div className={styles.contentGrid}>
           {libraryContent[activeTab]?.length > 0 ? (
-            libraryContent[activeTab].map((content, index) => (
+            libraryContent[activeTab].map((content: ContentItem, index: number) => (
               <div key={content.id || index} className={styles.contentCard}>
                 {content.type === 'image' && (
                   <img
@@ -220,12 +248,14 @@ export default function Library() {
                     <button
                       className={styles.actionButton}
                       onClick={() => handleDownload(content)}
+                      title="Download content"
                     >
                       <i className="fas fa-download"></i>
                     </button>
                     <button
                       className={styles.deleteButton}
                       onClick={() => handleDelete(content, activeTab)}
+                      title="Delete content"
                     >
                       <i className="fas fa-trash"></i>
                     </button>
