@@ -1,4 +1,4 @@
-import { Button } from "@/src2/components/ui/button";
+import { Button } from "../../src/components/ui/button";
 import { Link } from "react-router-dom";
 import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";

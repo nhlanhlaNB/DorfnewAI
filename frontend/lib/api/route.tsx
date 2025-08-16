@@ -1,127 +1,66 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { buffer } from "micro";
-import { createClient } from "@supabase/supabase-js";
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { app } from "firebase/app"; // Adjust path to your Firebase config
 
-// Initialize Stripe with Secret Key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-04-30.basil",
-});
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const auth = getAuth(app);
 
-// Initialize Supabase client with service role key
-const supabase = createClient(
-  process.env.SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+  useEffect(() => {
+    // Set up Firebase auth state listener
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      
+      if (!currentUser) {
+        router.push("/login");
+      }
+    });
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, [router, auth]);
 
-async function isEventProcessed(eventId: string) {
-  const { data, error } = await supabase
-    .from("processed_events")
-    .select("event_id")
-    .eq("event_id", eventId)
-    .single();
-
-  if (error && error.code !== "PGRST116") {
-    console.error("Supabase error checking event:", error);
-    throw error;
-  }
-
-  return !!data;
-}
-
-async function storeEventId(eventId: string) {
-  const { error } = await supabase
-    .from("processed_events")
-    .insert({ event_id: eventId, processed_at: new Date().toISOString() });
-
-  if (error) {
-    console.error("Supabase error storing event ID:", error);
-    throw error;
-  }
-}
-
-async function storeSubscription(subscription: any) {
-  // Retrieve customer to get user ID
-  const customer = await stripe.customers.retrieve(subscription.customer);
-  const userId = (customer as Stripe.Customer).metadata.supabase_user_id || "unknown";
-
-  const { error } = await supabase.from("subscriptions").insert({
-    user_id: userId,
-    subscription_id: subscription.id,
-    plan: subscription.items.data[0].price.id,
-    status: subscription.status,
-    created_at: new Date().toISOString(),
-  });
-
-  if (error) {
-    console.error("Supabase error storing subscription:", error);
-    throw error;
-  }
-}
-
-export async function POST(request: Request) {
-  const sig = request.headers.get("stripe-signature") || "";
-  const body = await buffer(request);
-
-  try {
-    const event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="spinner border-4 border-blue-500 border-t-transparent rounded-full w-12 h-12 mx-auto animate-spin"></div>
+          <p className="mt-4 text-gray-300">Checking authentication...</p>
+        </div>
+      </div>
     );
-
-    // Prevent duplicate processing
-    if (await isEventProcessed(event.id)) {
-      console.log(`Event ${event.id} already processed`);
-      return NextResponse.json({ received: true });
-    }
-
-    // Handle specific events for Individual, Business, Family plans
-    switch (event.type) {
-      case "invoice.payment_succeeded":
-        console.log("Payment succeeded for invoice:", event.data.object);
-        // TODO: Update user subscription status in Supabase
-        break;
-      case "invoice.payment_failed":
-        console.log("Payment failed for invoice:", event.data.object);
-        // TODO: Notify user to update payment method (e.g., via SendGrid)
-        break;
-      case "customer.subscription.created":
-        console.log("Subscription created:", event.data.object);
-        await storeSubscription(event.data.object);
-        break;
-      case "customer.subscription.updated":
-        console.log("Subscription updated:", event.data.object);
-        // TODO: Update subscription details in Supabase
-        break;
-      case "customer.subscription.deleted":
-        console.log("Subscription canceled:", event.data.object);
-        // TODO: Update subscription status in Supabase
-        break;
-      case "charge.succeeded":
-        console.log("Charge succeeded:", event.data.object);
-        // TODO: Log successful charge in Supabase
-        break;
-      case "charge.failed":
-        console.log("Charge failed:", event.data.object);
-        // TODO: Notify user of failed charge
-        break;
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-
-    // Mark event as processed
-    await storeEventId(event.id);
-
-    return NextResponse.json({ received: true });
-  } catch (err: any) {
-    console.error("Webhook error:", err.message);
-    return NextResponse.json({ error: err.message }, { status: 400 });
   }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">Authentication Required</h2>
+          <p className="text-gray-400 mb-6">You need to be logged in to access this page</p>
+          <button
+            onClick={() => router.push("/login")}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-300"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }

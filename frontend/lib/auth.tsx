@@ -1,7 +1,11 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "./supabase";
-import { User } from "@supabase/supabase-js";
+import { auth } from "./firebase";
+import { 
+  User, 
+  onAuthStateChanged, 
+  signOut as firebaseSignOut 
+} from "firebase/auth";
 
 type AuthContextType = {
   user: User | null;
@@ -20,33 +24,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error("Fetch user error:", error);
-        }
-        setUser(user);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Fetch user error:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await firebaseSignOut(auth);
       setUser(null);
     } catch (error) {
       console.error("Sign out error:", error);

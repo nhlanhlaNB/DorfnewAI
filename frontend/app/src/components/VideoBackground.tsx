@@ -22,7 +22,7 @@ const VideoBackground = () => {
 
     // Create animated spaceship scene
     const img = new Image();
-    img.src = spaceshipFrame;
+    img.src = spaceshipFrame.src;
     
     let animationFrame: number;
     let time = 0;

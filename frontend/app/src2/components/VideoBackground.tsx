@@ -22,7 +22,8 @@ const VideoBackground = () => {
 
     // Create animated spaceship scene
     const img = new Image();
-    img.src = spaceshipFrame;
+    // Fix: Access the src property from StaticImageData object
+    img.src = typeof spaceshipFrame === 'string' ? spaceshipFrame : spaceshipFrame.src;
     
     let animationFrame: number;
     let time = 0;

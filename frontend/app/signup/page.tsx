@@ -1,11 +1,11 @@
 
 "use client";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/Signup.module.css";
 import { auth, db } from "../../lib/firebase";
-import { useToast } from "@/../../app/src2/components/ui/use-toast";
+import { useToast } from "app/src/components/ui/use-toast"
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -21,7 +21,7 @@ export default function Signup() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -47,13 +47,15 @@ export default function Signup() {
       await sendEmailVerification(user);
 
       // Create user document in app_user collection
-      await setDoc(doc(db, "app_user", user.email), {
-        uid: user.uid,
-        email: normalizedEmail,
-        name,
-        createdAt: serverTimestamp(),
-        emailVerified: false,
-      });
+      if (user.email) {
+        await setDoc(doc(db, "app_user", user.email), {
+          uid: user.uid,
+          email: normalizedEmail,
+          name,
+          createdAt: serverTimestamp(),
+          emailVerified: false,
+        });
+      }
 
       toast({
         title: "Account created!",
@@ -64,7 +66,7 @@ export default function Signup() {
       setTimeout(() => {
         router.push("/verify-email");
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Signup error:", error);
       let message = error.message;
 
@@ -79,7 +81,6 @@ export default function Signup() {
       toast({
         title: "Signup failed",
         description: message,
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

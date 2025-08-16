@@ -1,7 +1,9 @@
+
 "use client";
 import styles from "../styles/MainContent.module.css";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { auth, db } from "../lib/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
@@ -110,7 +112,8 @@ export default function MainContent({ onGenerateClick }) {
     ],
   });
 
-  const fallbackMedia = {
+  // Move fallbackMedia to useMemo to make it stable for useCallback dependencies
+  const fallbackMedia = React.useMemo(() => ({
     image: [
       {
         type: "image",
@@ -133,7 +136,7 @@ export default function MainContent({ onGenerateClick }) {
       src: "https://cdn.pixabay.com/audio/2023/10/25/audio_508e9b4631.mp3",
       title: "Fallback Instrumental Music",
     },
-  };
+  }), []);
 
   const [subscribedChannels, setSubscribedChannels] = useState(subscriptions);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -143,82 +146,7 @@ export default function MainContent({ onGenerateClick }) {
   const [sportsNews, setSportsNews] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
 
-  useEffect(() => {
-    if (onGenerateClick) {
-      onGenerateClick.current = handleGenerateClick;
-      console.log("handleGenerateClick assigned to onGenerateClick ref");
-    }
-
-    const fetchSportsNews = async () => {
-      try {
-        const globalResponse = await fetch(
-          `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!globalResponse.ok) throw new Error(`Global fetch failed: ${globalResponse.statusText}`);
-        const globalData = await globalResponse.json();
-        let articles = globalData.status === "ok" ? globalData.articles : [];
-
-        const zaResponse = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!zaResponse.ok) throw new Error(`South Africa fetch failed: ${zaResponse.statusText}`);
-        const zaData = await zaResponse.json();
-        if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
-
-        const ngResponse = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!ngResponse.ok) throw new Error(`Nigeria fetch failed: ${ngResponse.statusText}`);
-        const ngData = await ngResponse.json();
-        if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
-
-        const uniqueArticles = Array.from(
-          new Map(articles.map((article) => [article.url, article])).values()
-        );
-
-        const validArticles = uniqueArticles
-          .filter((article) => article.title && article.title !== "[Removed]")
-          .slice(0, 30);
-
-        setSportsNews(validArticles);
-      } catch (error) {
-        console.error("Error fetching sports news:", error.message);
-        setSportsNews([]);
-      }
-    };
-
-    fetchSportsNews();
-  }, [onGenerateClick]);
-
-  const handleUnsubscribe = (channelName) => {
-    setSubscribedChannels(
-      subscribedChannels.filter((sub) => sub.channelName !== channelName)
-    );
-  };
-
-  const handleTopicClick = (topicName) => {
-    if (dummyMedia[topicName]) {
-      setSelectedCategory(topicName);
-    } else {
-      setSelectedCategory(null);
-    }
-  };
-
-  const closeMedia = () => {
-    setSelectedCategory(null);
-  };
-
-  const closeGenerationModal = () => {
-    setIsGenerating(false);
-    setProgress(0);
-    setGeneratedContent(null);
-  };
-
-  const closeArticleModal = () => {
-    setSelectedArticle(null);
-  };
-
-  const storeGeneratedContent = async (content) => {
+  const storeGeneratedContent = useCallback(async (content) => {
     const user = auth.currentUser;
     if (!user) {
       console.error("No authenticated user found. Redirecting to login.");
@@ -241,9 +169,9 @@ export default function MainContent({ onGenerateClick }) {
       console.error("Error storing content in Firestore:", error);
       return false;
     }
-  };
+  }, [router]);
 
-  const getContentTypeFromPrompt = (prompt) => {
+  const getContentTypeFromPrompt = useCallback((prompt) => {
     const lowerPrompt = prompt.toLowerCase();
     if (
       lowerPrompt.includes("video") ||
@@ -261,9 +189,9 @@ export default function MainContent({ onGenerateClick }) {
       return "audio";
     }
     return "image";
-  };
+  }, []);
 
-  const handleGenerateClick = async (prompt) => {
+  const handleGenerateClick = useCallback(async (prompt) => {
     console.log("handleGenerateClick called with prompt:", prompt);
     setIsGenerating(true);
     setProgress(0);
@@ -420,6 +348,81 @@ export default function MainContent({ onGenerateClick }) {
         }
       }
     }
+  }, [fallbackMedia, storeGeneratedContent, getContentTypeFromPrompt]);
+
+  useEffect(() => {
+    if (onGenerateClick) {
+      onGenerateClick.current = handleGenerateClick;
+      console.log("handleGenerateClick assigned to onGenerateClick ref");
+    }
+
+    const fetchSportsNews = async () => {
+      try {
+        const globalResponse = await fetch(
+          `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!globalResponse.ok) throw new Error(`Global fetch failed: ${globalResponse.statusText}`);
+        const globalData = await globalResponse.json();
+        let articles = globalData.status === "ok" ? globalData.articles : [];
+
+        const zaResponse = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!zaResponse.ok) throw new Error(`South Africa fetch failed: ${zaResponse.statusText}`);
+        const zaData = await zaResponse.json();
+        if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
+
+        const ngResponse = await fetch(
+          `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
+        );
+        if (!ngResponse.ok) throw new Error(`Nigeria fetch failed: ${ngResponse.statusText}`);
+        const ngData = await ngResponse.json();
+        if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
+
+        const uniqueArticles = Array.from(
+          new Map(articles.map((article) => [article.url, article])).values()
+        );
+
+        const validArticles = uniqueArticles
+          .filter((article) => article.title && article.title !== "[Removed]")
+          .slice(0, 30);
+
+        setSportsNews(validArticles);
+      } catch (error) {
+        console.error("Error fetching sports news:", error.message);
+        setSportsNews([]);
+      }
+    };
+
+    fetchSportsNews();
+  }, [onGenerateClick, handleGenerateClick]);
+
+  const handleUnsubscribe = (channelName) => {
+    setSubscribedChannels(
+      subscribedChannels.filter((sub) => sub.channelName !== channelName)
+    );
+  };
+
+  const handleTopicClick = (topicName) => {
+    if (dummyMedia[topicName]) {
+      setSelectedCategory(topicName);
+    } else {
+      setSelectedCategory(null);
+    }
+  };
+
+  const closeMedia = () => {
+    setSelectedCategory(null);
+  };
+
+  const closeGenerationModal = () => {
+    setIsGenerating(false);
+    setProgress(0);
+    setGeneratedContent(null);
+  };
+
+  const closeArticleModal = () => {
+    setSelectedArticle(null);
   };
 
   return (
@@ -450,10 +453,13 @@ export default function MainContent({ onGenerateClick }) {
                   <div className={styles.imageContainer}>
                     {generatedContent.items.map((item, index) => (
                       <div key={index} className={styles.imageWrapper}>
-                        <img
+                        <Image
                           src={item.src}
                           alt={item.title}
                           className={styles.generationPreviewImage}
+                          width={400}
+                          height={300}
+                          unoptimized
                         />
                         <p className={styles.imageTitle}>{item.title}</p>
                       </div>
@@ -517,10 +523,13 @@ export default function MainContent({ onGenerateClick }) {
           <div className={styles.articleBox}>
             <h3>{selectedArticle.title}</h3>
             {selectedArticle.urlToImage && (
-              <img
+              <Image
                 src={selectedArticle.urlToImage}
                 alt={selectedArticle.title}
                 className={styles.articleImage}
+                width={600}
+                height={400}
+                unoptimized
               />
             )}
             <p className={styles.articleSource}>
@@ -585,11 +594,14 @@ export default function MainContent({ onGenerateClick }) {
                 )}
                 {media.type === "image" && (
                   <>
-                    <img
+                    <Image
                       className={styles.mediaContent}
                       src={media.src}
                       alt={media.title}
                       title={media.title}
+                      width={400}
+                      height={300}
+                      unoptimized
                     />
                     <a
                       href={media.src}
@@ -630,10 +642,13 @@ export default function MainContent({ onGenerateClick }) {
                 onClick={() => setSelectedArticle(article)}
               >
                 {article.urlToImage && (
-                  <img
+                  <Image
                     src={article.urlToImage}
                     alt={article.title}
                     className={styles.newsImage}
+                    width={300}
+                    height={200}
+                    unoptimized
                   />
                 )}
                 <p className={styles.newsTitle}>{article.title}</p>
@@ -671,7 +686,7 @@ export default function MainContent({ onGenerateClick }) {
           </div>
         ) : (
           <p className={styles.noSubscriptions}>
-            You haven't subscribed to any channels yet. Explore topics to find creators!
+            You haven&apos;t subscribed to any channels yet. Explore topics to find creators!
           </p>
         )}
       </section>

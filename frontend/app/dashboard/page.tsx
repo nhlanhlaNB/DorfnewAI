@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from 'lib/firebase';          // adjust if you placed it elsewhere
+import { auth } from 'lib/firebase';   
 
 import Sidebar from '../../Components/Sidebar';
 import Header from '../../Components/Header';
