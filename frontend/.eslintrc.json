@@ -1,3 +1,17 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": ["next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": ["next.config.mjs", "next.config.js"],
+      "env": {
+        "node": true,
+        "es6": true
+      },
+      "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+      },
+      "extends": ["eslint:recommended"]
+    }
+  ]
 }

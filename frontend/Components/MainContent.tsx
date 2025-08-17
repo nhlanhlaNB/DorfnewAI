@@ -1,5 +1,5 @@
-
 "use client";
+
 import styles from "../styles/MainContent.module.css";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -7,11 +7,58 @@ import Image from "next/image";
 import { auth, db } from "../lib/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-export default function MainContent({ onGenerateClick }) {
-  const router = useRouter();
-  const generateHandlerRef = useRef(null);
+// Define interfaces for data structures
+interface MediaItem {
+  type: "image" | "video" | "audio";
+  src: string;
+  title: string;
+}
 
-  const topics = [
+interface GeneratedContent {
+  type: "image" | "video" | "audio";
+  src?: string;
+  title?: string;
+  items?: MediaItem[];
+}
+
+interface NewsArticle {
+  title: string;
+  urlToImage: string | null;
+  source: { name: string };
+  publishedAt: string;
+  description: string | null;
+  content: string | null;
+  url: string;
+}
+
+interface Subscription {
+  channelName: string;
+  creator: string;
+  type: string;
+  preview: string;
+  color: string;
+}
+
+interface Topic {
+  name: string;
+  color: string;
+}
+
+interface DummyMedia {
+  Videos: MediaItem[];
+  Images: MediaItem[];
+  Music: MediaItem[];
+}
+
+interface MainContentProps {
+  onGenerateClick: React.MutableRefObject<((value: string) => void) | null>;
+}
+
+export default function MainContent({ onGenerateClick }: MainContentProps) {
+  const router = useRouter();
+  const generateHandlerRef = useRef<((value: string) => void) | null>(null);
+
+  const topics: Topic[] = [
     { name: "Sports", color: "#ff6b6b" },
     { name: "Wild Life", color: "#4ecdc4" },
     { name: "Music", color: "#7b68ee" },
@@ -19,7 +66,7 @@ export default function MainContent({ onGenerateClick }) {
     { name: "Images", color: "#00ddeb" },
   ];
 
-  const subscriptions = [
+  const subscriptions: Subscription[] = [
     {
       channelName: "Nhlanhla's AI Sports Clips",
       creator: "NhlanhlaBhengu",
@@ -43,7 +90,7 @@ export default function MainContent({ onGenerateClick }) {
     },
   ];
 
-  const [dummyMedia, setDummyMedia] = useState({
+  const dummyMedia: DummyMedia = {
     Videos: [
       {
         type: "video",
@@ -110,10 +157,13 @@ export default function MainContent({ onGenerateClick }) {
         title: "Instrumental Track 3",
       },
     ],
-  });
+  };
 
-  // Move fallbackMedia to useMemo to make it stable for useCallback dependencies
-  const fallbackMedia = React.useMemo(() => ({
+  const fallbackMedia = React.useMemo<{
+    image: MediaItem[];
+    video: MediaItem;
+    audio: MediaItem;
+  }>(() => ({
     image: [
       {
         type: "image",
@@ -138,15 +188,15 @@ export default function MainContent({ onGenerateClick }) {
     },
   }), []);
 
-  const [subscribedChannels, setSubscribedChannels] = useState(subscriptions);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [generatedContent, setGeneratedContent] = useState(null);
-  const [sportsNews, setSportsNews] = useState([]);
-  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [subscribedChannels, setSubscribedChannels] = useState<Subscription[]>(subscriptions);
+  const [selectedCategory, setSelectedCategory] = useState<keyof DummyMedia | null>(null);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+  const [sportsNews, setSportsNews] = useState<NewsArticle[]>([]);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
 
-  const storeGeneratedContent = useCallback(async (content) => {
+  const storeGeneratedContent = useCallback(async (content: MediaItem): Promise<boolean> => {
     const user = auth.currentUser;
     if (!user) {
       console.error("No authenticated user found. Redirecting to login.");
@@ -165,13 +215,13 @@ export default function MainContent({ onGenerateClick }) {
       });
       console.log("Content stored in Firestore:", { docId, ...content });
       return true;
-    } catch (error) {
-      console.error("Error storing content in Firestore:", error);
+    } catch (error: unknown) {
+      console.error("Error storing content in Firestore:", (error as Error).message);
       return false;
     }
   }, [router]);
 
-  const getContentTypeFromPrompt = useCallback((prompt) => {
+  const getContentTypeFromPrompt = useCallback((prompt: string): "image" | "video" | "audio" => {
     const lowerPrompt = prompt.toLowerCase();
     if (
       lowerPrompt.includes("video") ||
@@ -191,7 +241,7 @@ export default function MainContent({ onGenerateClick }) {
     return "image";
   }, []);
 
-  const handleGenerateClick = useCallback(async (prompt) => {
+  const handleGenerateClick = useCallback(async (prompt: string) => {
     console.log("handleGenerateClick called with prompt:", prompt);
     setIsGenerating(true);
     setProgress(0);
@@ -208,7 +258,6 @@ export default function MainContent({ onGenerateClick }) {
     };
 
     if (contentType === "image") {
-      // Simulate generating two images using fallback images
       const interval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 95) {
@@ -220,54 +269,56 @@ export default function MainContent({ onGenerateClick }) {
       }, 200);
 
       try {
-        // Since placeholder URLs are not functional, use fallback images
         clearInterval(interval);
         setProgress(100);
 
-        const content = {
+        const content: GeneratedContent = {
           type: "image",
           items: [
             {
               src: fallbackMedia.image[0].src,
               title: `Generated Image 1: ${prompt}`,
+              type: "image",
             },
             {
               src: fallbackMedia.image[1].src,
               title: `Generated Image 2: ${prompt}`,
+              type: "image",
             },
           ],
         };
 
         setGeneratedContent(content);
-        // Store both images
-        for (const item of content.items) {
-          const stored = await storeGeneratedContent({ ...item, type: "image" });
+        for (const item of content.items!) {
+          const stored = await storeGeneratedContent(item);
           if (!stored) {
             console.warn("Failed to store content in Firestore.");
             return;
           }
         }
-      } catch (error) {
-        console.error("Generation error:", error);
+      } catch (error: unknown) {
+        console.error("Generation error:", (error as Error).message);
         clearInterval(interval);
         setProgress(100);
 
-        const content = {
+        const content: GeneratedContent = {
           type: "image",
           items: [
             {
               src: fallbackMedia.image[0].src,
               title: `Fallback Image 1 for ${prompt}`,
+              type: "image",
             },
             {
               src: fallbackMedia.image[1].src,
               title: `Fallback Image 2 for ${prompt}`,
+              type: "image",
             },
           ],
         };
         setGeneratedContent(content);
-        for (const item of content.items) {
-          const stored = await storeGeneratedContent({ ...item, type: "image" });
+        for (const item of content.items!) {
+          const stored = await storeGeneratedContent(item);
           if (!stored) {
             console.warn("Failed to store fallback content in Firestore.");
             return;
@@ -305,7 +356,7 @@ export default function MainContent({ onGenerateClick }) {
         clearInterval(interval);
         setProgress(100);
 
-        let content;
+        let content: GeneratedContent;
         if (data.error) {
           throw new Error(data.error);
         } else if (contentType === "video" && data.video_base64) {
@@ -325,23 +376,35 @@ export default function MainContent({ onGenerateClick }) {
         }
 
         setGeneratedContent(content);
-        const stored = await storeGeneratedContent(content);
+        // Convert GeneratedContent to MediaItem for storage
+        const mediaItem: MediaItem = {
+          type: content.type,
+          src: content.src || fallbackMedia[contentType].src, // Fallback if src is undefined
+          title: content.title || `Generated ${contentType}`,
+        };
+        const stored = await storeGeneratedContent(mediaItem);
         if (!stored) {
           console.warn("Failed to store content in Firestore.");
           return;
         }
-      } catch (error) {
-        console.error("Generation error:", error);
+      } catch (error: unknown) {
+        console.error("Generation error:", (error as Error).message);
         clearInterval(interval);
         setProgress(100);
 
-        const fallback = fallbackMedia[contentType] || fallbackMedia.image[0];
-        const content = {
-          ...fallback,
+        const fallback = fallbackMedia[contentType];
+        const content: GeneratedContent = {
+          type: contentType,
+          src: fallback.src,
           title: `Fallback ${contentType} for ${prompt}`,
         };
         setGeneratedContent(content);
-        const stored = await storeGeneratedContent(content);
+        const mediaItem: MediaItem = {
+          type: content.type,
+          src: content.src || fallback.src, // Fallback if src is undefined
+          title: content.title || `Fallback ${contentType}`,
+        };
+        const stored = await storeGeneratedContent(mediaItem);
         if (!stored) {
           console.warn("Failed to store fallback content in Firestore.");
           return;
@@ -362,34 +425,34 @@ export default function MainContent({ onGenerateClick }) {
           `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
         if (!globalResponse.ok) throw new Error(`Global fetch failed: ${globalResponse.statusText}`);
-        const globalData = await globalResponse.json();
+        const globalData: { status: string; articles: NewsArticle[] } = await globalResponse.json();
         let articles = globalData.status === "ok" ? globalData.articles : [];
 
         const zaResponse = await fetch(
           `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
         if (!zaResponse.ok) throw new Error(`South Africa fetch failed: ${zaResponse.statusText}`);
-        const zaData = await zaResponse.json();
+        const zaData: { status: string; articles: NewsArticle[] } = await zaResponse.json();
         if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
 
         const ngResponse = await fetch(
           `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
         );
         if (!ngResponse.ok) throw new Error(`Nigeria fetch failed: ${ngResponse.statusText}`);
-        const ngData = await ngResponse.json();
+        const ngData: { status: string; articles: NewsArticle[] } = await ngResponse.json();
         if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
 
         const uniqueArticles = Array.from(
-          new Map(articles.map((article) => [article.url, article])).values()
+          new Map(articles.map((article: NewsArticle) => [article.url, article])).values()
         );
 
         const validArticles = uniqueArticles
-          .filter((article) => article.title && article.title !== "[Removed]")
+          .filter((article: NewsArticle) => article.title && article.title !== "[Removed]")
           .slice(0, 30);
 
         setSportsNews(validArticles);
-      } catch (error) {
-        console.error("Error fetching sports news:", error.message);
+      } catch (error: unknown) {
+        console.error("Error fetching sports news:", (error as Error).message);
         setSportsNews([]);
       }
     };
@@ -397,13 +460,13 @@ export default function MainContent({ onGenerateClick }) {
     fetchSportsNews();
   }, [onGenerateClick, handleGenerateClick]);
 
-  const handleUnsubscribe = (channelName) => {
+  const handleUnsubscribe = (channelName: string) => {
     setSubscribedChannels(
       subscribedChannels.filter((sub) => sub.channelName !== channelName)
     );
   };
 
-  const handleTopicClick = (topicName) => {
+  const handleTopicClick = (topicName: keyof DummyMedia) => {
     if (dummyMedia[topicName]) {
       setSelectedCategory(topicName);
     } else {
@@ -432,26 +495,19 @@ export default function MainContent({ onGenerateClick }) {
           <div className={styles.generationBox}>
             <h3>Generating Your Content</h3>
             <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${progress}%` }}
-              ></div>
+              <div className={`${styles.progressFill} ${styles.progressFillActive} ${styles[`progress${progress}`]}`}></div>
             </div>
             <p className={styles.progressText}>
               {progress < 100 ? `Generating... ${progress}%` : "Generation complete!"}
             </p>
             <div className={styles.generationPreview}>
               <div
-                className={styles.blurOverlay}
-                style={{
-                  opacity: progress < 100 ? 0.8 : 0,
-                  backdropFilter: progress < 100 ? "blur(15px)" : "none",
-                }}
+                className={`${styles.blurOverlay} ${progress < 100 ? styles.blurOverlayActive : ''}`}
               ></div>
               {progress >= 100 && generatedContent && (
                 generatedContent.type === "image" ? (
                   <div className={styles.imageContainer}>
-                    {generatedContent.items.map((item, index) => (
+                    {generatedContent.items?.map((item: MediaItem, index: number) => (
                       <div key={index} className={styles.imageWrapper}>
                         <Image
                           src={item.src}
@@ -487,7 +543,7 @@ export default function MainContent({ onGenerateClick }) {
             {progress >= 100 && (
               <div className={styles.generationActions}>
                 {generatedContent?.type === "image" ? (
-                  generatedContent.items.map((item, index) => (
+                  generatedContent.items?.map((item: MediaItem, index: number) => (
                     <a
                       key={index}
                       href={item.src}
@@ -500,7 +556,7 @@ export default function MainContent({ onGenerateClick }) {
                 ) : (
                   <a
                     href={generatedContent?.src}
-                    download={`${generatedContent?.title}.${generatedContent.type === "video" ? "mp4" : "wav"}`}
+                    download={`${generatedContent?.title}.${generatedContent?.type === "video" ? "mp4" : "wav"}`}
                     className={styles.downloadButton}
                   >
                     Download
@@ -568,9 +624,8 @@ export default function MainContent({ onGenerateClick }) {
           {topics.map((topic) => (
             <div
               key={topic.name}
-              className={styles.topicCard}
-              style={{ backgroundColor: topic.color }}
-              onClick={() => handleTopicClick(topic.name)}
+              className={`${styles.topicCard} ${styles[`topic${topic.name.replace(' ', '')}`]}`}
+              onClick={() => handleTopicClick(topic.name as keyof DummyMedia)}
             >
               {topic.name}
             </div>
@@ -582,7 +637,7 @@ export default function MainContent({ onGenerateClick }) {
         <section className={styles.mediaDisplay}>
           <h3>{selectedCategory}</h3>
           <div className={styles.mediaGrid}>
-            {dummyMedia[selectedCategory].map((media, index) => (
+            {dummyMedia[selectedCategory].map((media: MediaItem, index: number) => (
               <div key={index} className={styles.mediaCard}>
                 {media.type === "video" && (
                   <video
@@ -635,7 +690,7 @@ export default function MainContent({ onGenerateClick }) {
         <h2>Sports News</h2>
         {sportsNews.length > 0 ? (
           <div className={styles.newsGrid}>
-            {sportsNews.map((article, index) => (
+            {sportsNews.map((article: NewsArticle, index: number) => (
               <div
                 key={index}
                 className={styles.newsCard}
@@ -667,8 +722,7 @@ export default function MainContent({ onGenerateClick }) {
             {subscribedChannels.map((sub) => (
               <div
                 key={sub.channelName}
-                className={styles.subscriptionCard}
-                style={{ borderLeft: `4px solid ${sub.color}` }}
+                className={`${styles.subscriptionCard} ${styles[`subscription${sub.channelName.replace(/[^a-zA-Z0-9]/g, '')}`]}`}
               >
                 <div className={styles.channelInfo}>
                   <h3>{sub.channelName}</h3>
