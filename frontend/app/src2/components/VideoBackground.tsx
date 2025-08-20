@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import spaceshipFrame from '@/src2/assets/spaceship-video-frame.jpg';
+import spaceshipFrame from '@/assets/spaceship-video-frame.jpg';
 
 const VideoBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,8 +22,7 @@ const VideoBackground = () => {
 
     // Create animated spaceship scene
     const img = new Image();
-    // Fix: Access the src property from StaticImageData object
-    img.src = typeof spaceshipFrame === 'string' ? spaceshipFrame : spaceshipFrame.src;
+    img.src = spaceshipFrame.src;
     
     let animationFrame: number;
     let time = 0;
@@ -117,11 +116,16 @@ const VideoBackground = () => {
     <div className="absolute inset-0 overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ filter: 'brightness(0.7) contrast(1.1)' }}
+        className="absolute inset-0 w-full h-full object-cover canvas-filter"
       />
       {/* Additional overlay for better text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40" />
+      
+      <style jsx>{`
+        .canvas-filter {
+          filter: brightness(0.7) contrast(1.1);
+        }
+      `}</style>
     </div>
   );
 };

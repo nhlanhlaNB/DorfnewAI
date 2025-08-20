@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/SignUp.module.css";
 import { auth, db } from "../../lib/firebase";
-import { useToast } from "app/src/components/ui/use-toast"
+import { useToast } from "app/src2/components/ui/use-toast"
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,

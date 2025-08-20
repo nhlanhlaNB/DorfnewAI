@@ -1,6 +1,7 @@
+// app/src/page.tsx
 "use client";
-import Index from '../../app/src2/pages/Index'; // Adjust path to your Index.tsx
+import LandingPage from "./components/LandingPage";
 
 export default function Page() {
-  return <Index />;
+  return <LandingPage />;
 }

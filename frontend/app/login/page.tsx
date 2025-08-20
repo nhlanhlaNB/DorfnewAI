@@ -23,7 +23,6 @@ export default function Login() {
       toast({
         title: "Error",
         description: "Please fill in all fields",
-        variant: "destructive",
       });
       return;
     }
@@ -73,7 +72,6 @@ export default function Login() {
       toast({
         title: "Error",
         description: message,
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
