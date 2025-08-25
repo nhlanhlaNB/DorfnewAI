@@ -2,7 +2,17 @@ import { Button } from "./ui/button";
 import Link from 'next/link';
 import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import ThreeDBackground from "./ThreeDBackground";
+import styles from '../../../styles/landing.module.css';
+
+const ThreeDBackground = () => {
+  return (
+    <div className={styles.absoluteInset}>
+      <div className={`${styles.blurCircle} ${styles.blur1}`} />
+      <div className={`${styles.blurCircle} ${styles.blur2}`} />
+      <div className={`${styles.blurCircle} ${styles.blur3}`} />
+    </div>
+  );
+};
 
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -89,46 +99,46 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={styles.minHScreen}>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center py-4">
-            <Link href="/" className="text-2xl font-bold animated-gradient">
+      <header className={styles.header}>
+        <div className={styles.container}>
+          <div className={styles.headerContent}>
+            <Link href="/" className={styles.logo}>
               DorfNewAI
             </Link>
             
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-              <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+            <nav className={styles.desktopNav}>
+              <a href="#features" className={styles.navLink}>Features</a>
+              <a href="#pricing" className={styles.navLink}>Pricing</a>
               <Button variant="outline" asChild>
                 <Link href="/login">Sign In</Link>
               </Button>
-              <Button asChild className="glow-button">
+              <Button asChild>
                 <Link href="/signup">Sign Up</Link>
               </Button>
             </nav>
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2"
+              className={styles.mobileMenuButton}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className={styles.icon} /> : <Menu className={styles.icon} />}
             </button>
           </div>
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-border">
-              <nav className="flex flex-col gap-4">
-                <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-                <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-                <Button variant="outline" asChild className="w-full">
+            <div className={styles.mobileNav}>
+              <nav className={styles.mobileNavContent}>
+                <a href="#features" className={styles.navLink}>Features</a>
+                <a href="#pricing" className={styles.navLink}>Pricing</a>
+                <Button variant="outline" asChild className={styles.fullWidth}>
                   <Link href="/login">Sign In</Link>
                 </Button>
-                <Button asChild className="w-full glow-button">
+                <Button asChild className={styles.fullWidth}>
                   <Link href="/signup">Sign Up</Link>
                 </Button>
               </nav>
@@ -139,21 +149,21 @@ const LandingPage = () => {
 
       <main>
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <section className={styles.heroSection}>
           <ThreeDBackground />
           
-          <div className="relative z-10 text-center max-w-4xl mx-auto px-4 pt-20">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 animated-gradient">
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>
               Create Stunning AI-Generated Content with DorfNewAI
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            <p className={styles.heroSubtitle}>
               Unleash your creativity with our advanced AI tools. Generate impressive videos, images, and music in seconds.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild className="glow-button text-lg px-8 py-6">
+            <div className={styles.heroButtons}>
+              <Button size="lg" asChild className={styles.primaryButton}>
                 <Link href="/signup">Try for Free</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6">
+              <Button size="lg" variant="outline" asChild className={styles.secondaryButton}>
                 <Link href="/signup">Sign Up</Link>
               </Button>
             </div>
@@ -161,27 +171,27 @@ const LandingPage = () => {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 bg-secondary/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 animated-gradient">
+        <section id="features" className={styles.featuresSection}>
+          <div className={styles.container}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>
                 Experience the Power of DorfNewAI
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className={styles.sectionSubtitle}>
                 Our powerful AI tools help you create professional content in minutes, not hours
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className={styles.featuresGrid}>
               {features.map((feature) => {
                 const IconComponent = feature.icon;
                 return (
-                  <div key={feature.title} className="glow-card bg-card p-6 rounded-lg text-center">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg mb-4">
-                      <IconComponent className="h-6 w-6 text-primary" />
+                  <div key={feature.title} className={styles.featureCard}>
+                    <div className={styles.featureIcon}>
+                      <IconComponent className={styles.icon} />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground text-sm">{feature.description}</p>
+                    <h3 className={styles.featureTitle}>{feature.title}</h3>
+                    <p className={styles.featureDescription}>{feature.description}</p>
                   </div>
                 );
               })}
@@ -190,35 +200,33 @@ const LandingPage = () => {
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-20 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 animated-gradient">
+        <section id="pricing" className={styles.pricingSection}>
+          <div className={styles.container}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>
                 Simple, transparent pricing
               </h2>
-              <p className="text-xl text-muted-foreground">Choose the plan that works best for your needs</p>
+              <p className={styles.sectionSubtitle}>Choose the plan that works best for your needs</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className={styles.pricingGrid}>
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.name}
-                  className={`glow-card bg-card p-8 rounded-lg text-center relative ${
-                    plan.highlight ? 'border-primary ring-2 ring-primary/20' : ''
-                  }`}
+                  className={`${styles.pricingCard} ${plan.highlight ? styles.highlightCard : ''}`}
                 >
                   {plan.highlight && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-sm font-medium px-4 py-1 rounded-full">
+                    <div className={styles.popularBadge}>
                       Most Popular
                     </div>
                   )}
-                  <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-                  <div className="text-3xl font-bold mb-2">{plan.price}</div>
-                  <p className="text-muted-foreground mb-6 text-sm">{plan.description}</p>
-                  <ul className="text-left mb-8 space-y-2">
+                  <h3 className={styles.planName}>{plan.name}</h3>
+                  <div className={styles.planPrice}>{plan.price}</div>
+                  <p className={styles.planDescription}>{plan.description}</p>
+                  <ul className={styles.featuresList}>
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center text-sm">
-                        <Check className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                      <li key={feature} className={styles.featureItem}>
+                        <Check className={styles.checkIcon} />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -226,7 +234,7 @@ const LandingPage = () => {
                   <Button 
                     variant={plan.buttonVariant} 
                     asChild 
-                    className={`w-full ${plan.highlight ? 'glow-button' : ''}`}
+                    className={styles.fullWidth}
                   >
                     <Link href={plan.path}>{plan.buttonText}</Link>
                   </Button>
@@ -238,44 +246,43 @@ const LandingPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-secondary/20 py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerGrid}>
             <div>
-              <h3 className="text-lg font-semibold mb-4 animated-gradient">DorfNewAI</h3>
-              <p className="text-muted-foreground text-sm mb-4">
+              <h3 className={styles.footerTitle}>DorfNewAI</h3>
+              <p className={styles.footerDescription}>
                 Advanced AI tools for creating stunning videos, images, and music.
               </p>
             </div>
             <div>
-              <h4 className="text-lg font-semibold mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><a href="#features" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="#try-now" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Try for Free</a></li>
+              <h4 className={styles.footerHeading}>Product</h4>
+              <ul className={styles.footerLinks}>
+                <li><a href="#features" className={styles.footerLink}>Features</a></li>
+                <li><a href="#pricing" className={styles.footerLink}>Pricing</a></li>
+                <li><a href="#try-now" className={styles.footerLink}>Try for Free</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-lg font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li><Link href="/blog" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="/tutorials" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Tutorials</Link></li>
-                <li><Link href="/support" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Support</Link></li>
+              <h4 className={styles.footerHeading}>Resources</h4>
+              <ul className={styles.footerLinks}>
+                <li><Link href="/blog" className={styles.footerLink}>Blog</Link></li>
+                <li><Link href="/tutorials" className={styles.footerLink}>Tutorials</Link></li>
+                <li><Link href="/support" className={styles.footerLink}>Support</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-lg font-semibold mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><Link href="/about" className="text-muted-foreground text-sm hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/contact" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Contact</Link></li>
-                <li><Link href="/privacy" className="text-muted-foreground text-sm hover:text-foreground transition-colors">Privacy Policy</Link></li>
+              <h4 className={styles.footerHeading}>Company</h4>
+              <ul className={styles.footerLinks}>
+                <li><Link href="/about" className={styles.footerLink}>About</Link></li>
+                <li><Link href="/contact" className={styles.footerLink}>Contact</Link></li>
+                <li><Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm">© 2025 DorfNewAI. All rights reserved.</p>
-            
+          <div className={styles.footerBottom}>
+            <p className={styles.copyright}>© 2025 DorfNewAI. All rights reserved.</p>
           </div>
         </div>
       </footer>

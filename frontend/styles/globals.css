@@ -1,5 +1,6 @@
 @tailwind base;
 @tailwind components;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 :root {
