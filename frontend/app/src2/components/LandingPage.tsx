@@ -1,15 +1,24 @@
 import { Button } from "./ui/button";
-import Link from 'next/link';
+import Link from "next/link";
 import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import styles from '../../../styles/landing.module.css';
+import styles from "../../../styles/landing.module.css";
 
 const ThreeDBackground = () => {
   return (
     <div className={styles.absoluteInset}>
       <div className={`${styles.blurCircle} ${styles.blur1}`} />
       <div className={`${styles.blurCircle} ${styles.blur2}`} />
-      <div className={`${styles.blurCircle} ${styles.blur3}`} />
+      <div className={`${styles.star} ${styles["star-1"]}`} />
+      <div className={`${styles.star} ${styles["star-2"]}`} />
+      <div className={`${styles.star} ${styles["star-3"]}`} />
+      <div className={`${styles.star} ${styles["star-4"]}`} />
+      <div className={`${styles.star} ${styles["star-5"]}`} />
+      <div className={`${styles.star} ${styles["star-6"]}`} />
+      <div className={`${styles.star} ${styles["star-7"]}`} />
+      <div className={`${styles.star} ${styles["star-8"]}`} />
+      <div className={`${styles.star} ${styles["star-9"]}`} />
+      <div className={`${styles.star} ${styles["star-10"]}`} />
     </div>
   );
 };
@@ -24,7 +33,7 @@ const LandingPage = () => {
       icon: Video,
     },
     {
-      title: "AI Image Generation", 
+      title: "AI Image Generation",
       description: "Create beautiful artwork and graphics with our advanced image models.",
       icon: Image,
     },
