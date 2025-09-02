@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import styles from "../../styles/SignUp.module.css";
+import styles from "../../styles/Signup.module.css";
 import { auth, db } from "../../lib/firebase";
 import { useToast } from "app/src2/components/ui/use-toast"
 import {

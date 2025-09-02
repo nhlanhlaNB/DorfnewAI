@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import styles from "../../styles/LogIn.module.css";
+import styles from "../../styles/Login.module.css";
 import { auth } from "../../lib/firebase";
 import { useToast } from "@/../../app/src2/components/ui/use-toast";
 import { signInWithEmailAndPassword } from "firebase/auth";
