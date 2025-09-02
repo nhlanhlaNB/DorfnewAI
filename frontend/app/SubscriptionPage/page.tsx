@@ -63,27 +63,35 @@ const plans: Plan[] = [
 
 export default function SubscriptionPage() {
   const router = useRouter();
-  const auth = getAuth();
-  const db = getFirestore();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [paypalReady, setPaypalReady] = useState(false);
+  const [auth, setAuth] = useState<any>(null);
+  const [db, setDb] = useState<any>(null);
   const rendered = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
-    const off = onAuthStateChanged(auth, (u) => {
-      if (!u) {
-        router.push('/login');
-      } else {
-        setUser(u);
-      }
-      setLoading(false);
-    });
-    return () => off();
-  }, [auth, router]);
+    // Initialize Firebase only on client side
+    if (typeof window !== 'undefined') {
+      const authInstance = getAuth();
+      const dbInstance = getFirestore();
+      setAuth(authInstance);
+      setDb(dbInstance);
+
+      const off = onAuthStateChanged(authInstance, (u) => {
+        if (!u) {
+          router.push('/login');
+        } else {
+          setUser(u);
+        }
+        setLoading(false);
+      });
+      return () => off();
+    }
+  }, [router]);
 
   useEffect(() => {
-    if (!paypalReady || !user) return;
+    if (!paypalReady || !user || !db) return;
 
     plans.forEach((plan) => {
       const container = document.getElementById(
@@ -157,17 +165,7 @@ export default function SubscriptionPage() {
         data-sdk-integration-source="button-factory"
         onLoad={() => setPaypalReady(true)}
       />
-      <head>
-        <title>Subscription Plans</title>
-        <meta
-          name="description"
-          content="Choose the plan that best suits your needs"
-        />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-        />
-      </head>
+      
       <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <button

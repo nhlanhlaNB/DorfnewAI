@@ -21,16 +21,6 @@ interface GeneratedContent {
   items?: MediaItem[];
 }
 
-interface NewsArticle {
-  title: string;
-  urlToImage: string | null;
-  source: { name: string };
-  publishedAt: string;
-  description: string | null;
-  content: string | null;
-  url: string;
-}
-
 interface Subscription {
   channelName: string;
   creator: string;
@@ -193,8 +183,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
-  const [sportsNews, setSportsNews] = useState<NewsArticle[]>([]);
-  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
 
   const storeGeneratedContent = useCallback(async (content: MediaItem): Promise<boolean> => {
     const user = auth.currentUser;
@@ -418,46 +406,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       onGenerateClick.current = handleGenerateClick;
       console.log("handleGenerateClick assigned to onGenerateClick ref");
     }
-
-    const fetchSportsNews = async () => {
-      try {
-        const globalResponse = await fetch(
-          `https://newsapi.org/v2/everything?q=sports+South Africa+Nigeria&language=en&sortBy=publishedAt&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!globalResponse.ok) throw new Error(`Global fetch failed: ${globalResponse.statusText}`);
-        const globalData: { status: string; articles: NewsArticle[] } = await globalResponse.json();
-        let articles = globalData.status === "ok" ? globalData.articles : [];
-
-        const zaResponse = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=za&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!zaResponse.ok) throw new Error(`South Africa fetch failed: ${zaResponse.statusText}`);
-        const zaData: { status: string; articles: NewsArticle[] } = await zaResponse.json();
-        if (zaData.status === "ok") articles = [...articles, ...zaData.articles];
-
-        const ngResponse = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=ng&category=sports&apiKey=${process.env.NEXT_PUBLIC_NEWSAPI_KEY}`
-        );
-        if (!ngResponse.ok) throw new Error(`Nigeria fetch failed: ${ngResponse.statusText}`);
-        const ngData: { status: string; articles: NewsArticle[] } = await ngResponse.json();
-        if (ngData.status === "ok") articles = [...articles, ...ngData.articles];
-
-        const uniqueArticles = Array.from(
-          new Map(articles.map((article: NewsArticle) => [article.url, article])).values()
-        );
-
-        const validArticles = uniqueArticles
-          .filter((article: NewsArticle) => article.title && article.title !== "[Removed]")
-          .slice(0, 30);
-
-        setSportsNews(validArticles);
-      } catch (error: unknown) {
-        console.error("Error fetching sports news:", (error as Error).message);
-        setSportsNews([]);
-      }
-    };
-
-    fetchSportsNews();
   }, [onGenerateClick, handleGenerateClick]);
 
   const handleUnsubscribe = (channelName: string) => {
@@ -482,10 +430,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     setIsGenerating(false);
     setProgress(0);
     setGeneratedContent(null);
-  };
-
-  const closeArticleModal = () => {
-    setSelectedArticle(null);
   };
 
   return (
@@ -574,50 +518,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         </div>
       )}
 
-      {selectedArticle && (
-        <div className={styles.articleModal}>
-          <div className={styles.articleBox}>
-            <h3>{selectedArticle.title}</h3>
-            {selectedArticle.urlToImage && (
-              <Image
-                src={selectedArticle.urlToImage}
-                alt={selectedArticle.title}
-                className={styles.articleImage}
-                width={600}
-                height={400}
-                unoptimized
-              />
-            )}
-            <p className={styles.articleSource}>
-              Source: {selectedArticle.source.name}
-            </p>
-            <p className={styles.articlePublished}>
-              Published: {new Date(selectedArticle.publishedAt).toLocaleString()}
-            </p>
-            <p className={styles.articleDescription}>
-              {selectedArticle.description || "No description available."}
-            </p>
-            <p className={styles.articleContent}>
-              {selectedArticle.content || "No additional content available."}
-            </p>
-            <a
-              href={selectedArticle.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.readMoreButton}
-            >
-              Read Full Article
-            </a>
-            <button
-              className={styles.closeButton}
-              onClick={closeArticleModal}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
       <section className={styles.exploreTopics}>
         <h2>Explore Topics</h2>
         <div className={styles.topicsGrid}>
@@ -685,35 +585,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
           </button>
         </section>
       )}
-
-      <section className={styles.sportsNews}>
-        <h2>Sports News</h2>
-        {sportsNews.length > 0 ? (
-          <div className={styles.newsGrid}>
-            {sportsNews.map((article: NewsArticle, index: number) => (
-              <div
-                key={index}
-                className={styles.newsCard}
-                onClick={() => setSelectedArticle(article)}
-              >
-                {article.urlToImage && (
-                  <Image
-                    src={article.urlToImage}
-                    alt={article.title}
-                    className={styles.newsImage}
-                    width={300}
-                    height={200}
-                    unoptimized
-                  />
-                )}
-                <p className={styles.newsTitle}>{article.title}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className={styles.noNews}>No sports news available.</p>
-        )}
-      </section>
 
       <section className={styles.yourSubscriptions}>
         <h2>Your Subscriptions</h2>
