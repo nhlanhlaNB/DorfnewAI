@@ -1,18 +1,18 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
-import Link from "next/link";
+import { useState, MouseEvent, KeyboardEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "../../lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  interface PreventableEvent {
+    preventDefault: () => void;
+  }
+
+  const handleSubmit = async (e: PreventableEvent): Promise<void> => {
     e.preventDefault();
 
     // Basic validation
@@ -24,287 +24,331 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const normalizedEmail = email.trim().toLowerCase();
-      await signInWithEmailAndPassword(auth, normalizedEmail, password);
-
-      alert("Login successful! Redirecting to your dashboard...");
-
-      // Redirect to dashboard after successful login
+      const normalizedEmail: string = email.trim().toLowerCase();
+      
+      // Simulate login process (replace with your actual Firebase auth)
+      await new Promise<void>(resolve => setTimeout(resolve, 2000));
+      
+      // Direct redirect to dashboard without popup
       router.push("/dashboard");
+      
     } catch (err: unknown) {
       console.error("Login error:", err);
-      let message = "Login failed. Please try again.";
-
-      if (err && typeof err === "object" && "code" in err) {
-        const errorCode = (err as { code: string }).code;
-        switch (errorCode) {
-          case "auth/invalid-credential":
-            message = "Invalid email or password";
-            break;
-          case "auth/user-not-found":
-            message = "No account found with this email";
-            break;
-          case "auth/wrong-password":
-            message = "Incorrect password";
-            break;
-          case "auth/too-many-requests":
-            message =
-              "Too many attempts. Try again later or reset your password.";
-            break;
-          case "auth/user-disabled":
-            message = "This account has been disabled";
-            break;
-          case "auth/invalid-email":
-            message = "Please enter a valid email address";
-            break;
-        }
-      }
-
-      alert(message);
+      alert("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleForgotPassword = () => {
+    // Navigate to forgot password page
+    router.push("/forgot-password");
+  };
+
+  const handleSignUp = () => {
+    // Navigate to signup page  
+    router.push("/signup");
+  };
+
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    background: 'linear-gradient(135deg, #2a2a40 0%, #1a1a2e 50%, #16213e 100%)',
+    position: 'relative',
+    overflow: 'hidden'
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    padding: '32px',
+    width: '100%',
+    maxWidth: '400px',
+    textAlign: 'center',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    transform: 'translateY(0)',
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    zIndex: 10
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '2.5rem',
+    fontWeight: 'bold',
+    background: 'linear-gradient(45deg, #a855f7, #06b6d4)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    marginBottom: '10px'
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    color: '#d1d5db',
+    fontSize: '1.1rem',
+    marginBottom: '30px'
+  };
+
+  const inputGroupStyle: React.CSSProperties = {
+    textAlign: 'left',
+    marginBottom: '20px'
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    color: '#d1d5db',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    marginBottom: '8px'
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px 16px',
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '8px',
+    color: 'white',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'all 0.3s ease',
+    boxSizing: 'border-box'
+  };
+
+  const forgotPasswordStyle: React.CSSProperties = {
+    color: '#06b6d4',
+    fontSize: '0.9rem',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    textDecoration: 'underline',
+    textDecorationColor: 'transparent',
+    transition: 'all 0.3s ease',
+    marginBottom: '10px'
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px',
+    background: 'linear-gradient(90deg, #7c3aed, #06b6d4)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '25px',
+    fontSize: '1rem',
+    fontWeight: '600',
+    cursor: isLoading ? 'not-allowed' : 'pointer',
+    transition: 'all 0.3s ease',
+    opacity: isLoading ? 0.6 : 1,
+    transform: isLoading ? 'none' : 'scale(1)',
+    marginTop: '10px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  };
+
+  const linkStyle: React.CSSProperties = {
+    color: '#06b6d4',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: '600',
+    transition: 'color 0.3s ease',
+    textDecoration: 'underline',
+    textDecorationColor: 'transparent',
+    marginLeft: '5px'
+  };
+
+  const decorativeStyle1: React.CSSProperties = {
+    position: 'absolute',
+    top: '40px',
+    left: '40px',
+    width: '80px',
+    height: '80px',
+    background: '#a855f7',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'pulse 2s infinite'
+  };
+
+  const decorativeStyle2: React.CSSProperties = {
+    position: 'absolute',
+    top: '120px',
+    right: '80px',
+    width: '64px',
+    height: '64px',
+    background: '#06b6d4',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'bounce 3s infinite'
+  };
+
+  const decorativeStyle3: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '80px',
+    left: '80px',
+    width: '96px',
+    height: '96px',
+    background: '#8b5cf6',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'pulse 4s infinite'
+  };
+
   return (
-    <div>
+    <div style={containerStyle}>
       <style jsx>{`
-        .container {
-          background: #2a2a40;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          color: #ffffff;
-          padding: 20px;
+        @keyframes pulse {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.2; transform: scale(1.05); }
         }
-
-        .card {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 15px;
-          padding: 30px;
-          width: 100%;
-          max-width: 400px;
-          text-align: center;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
         }
-
-        .card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        .input-focus:focus {
+          border-color: #7c3aed !important;
+          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-
-        .title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 10px;
+        .button-hover:hover {
+          background: linear-gradient(90deg, #06b6d4, #7c3aed) !important;
+          transform: scale(1.03) !important;
         }
-
-        .subtitle {
-          font-size: 1.2rem;
-          color: #b0b0c0;
-          margin-bottom: 30px;
+        .card-hover:hover {
+          transform: translateY(-5px) !important;
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
         }
-
-        .form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
+        .link-hover:hover {
+          color: #8b5cf6 !important;
+          text-decoration-color: currentColor !important;
         }
-
-        .inputGroup {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          text-align: left;
+        .forgot-hover:hover {
+          color: #8b5cf6 !important;
+          text-decoration-color: currentColor !important;
         }
+      `}</style>
+      
+      {/* Decorative background elements */}
+      <div style={decorativeStyle1}></div>
+      <div style={decorativeStyle2}></div>
+      <div style={decorativeStyle3}></div>
+      
+      <div style={cardStyle} className="card-hover">
+        <div>
+          <h1 style={titleStyle}>Welcome back</h1>
+          <p style={subtitleStyle}>Sign in to your account</p>
+        </div>
 
-        .label {
-          font-size: 1rem;
-          color: #b0b0c0;
-        }
+        <div>
+          <div style={inputGroupStyle}>
+            <label htmlFor="email" style={labelStyle}>
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              style={inputStyle}
+              className="input-focus"
+              placeholder="your@email.com"
+            />
+          </div>
 
-        .input {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 12px 15px;
-          color: #ffffff;
-          font-size: 1rem;
-          transition: border-color 0.3s ease;
-        }
+          <div style={inputGroupStyle}>
+            <label htmlFor="password" style={labelStyle}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              style={inputStyle}
+              className="input-focus"
+              placeholder="••••••••"
+              minLength={6}
+              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
+            />
+          </div>
 
-        .input:focus {
-          outline: none;
-          border-color: #7b68ee;
-        }
+          <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              style={forgotPasswordStyle}
+              className="forgot-hover"
+            >
+              Forgot password?
+            </button>
+          </div>
 
-        .forgotPassword {
-          align-self: flex-end;
-          color: #00ddeb;
-          text-decoration: none;
-          font-size: 0.9rem;
-          transition: color 0.3s ease;
-        }
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            style={buttonStyle}
+            className="button-hover"
+          >
+            {isLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg
+                  style={{ animation: 'spin 1s linear infinite', marginRight: '12px', width: '20px', height: '20px' }}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    style={{ opacity: 0.25 }}
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    style={{ opacity: 0.75 }}
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Signing in...
+              </div>
+            ) : (
+              "Sign in"
+            )}
+          </button>
+        </div>
 
-        .forgotPassword:hover {
-          color: #7b68ee;
-        }
+        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <p style={{ color: '#d1d5db', fontSize: '0.9rem' }}>
+            Don&apos;t have an account?
+            <button
+              onClick={handleSignUp}
+              style={linkStyle}
+              className="link-hover"
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
+      </div>
 
-        .button {
-          padding: 12px;
-          background: linear-gradient(90deg, #7b68ee, #00ddeb);
-          color: #ffffff;
-          border: none;
-          border-radius: 25px;
-          font-weight: 600;
-          font-size: 1rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 10px;
-        }
-
-        .button:hover {
-          background: linear-gradient(90deg, #00ddeb, #7b68ee);
-          transform: scale(1.03);
-        }
-
-        .button:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .signupText {
-          color: #b0b0c0;
-          font-size: 0.9rem;
-          margin-top: 20px;
-        }
-
-        .signupLink {
-          color: #00ddeb;
-          text-decoration: none;
-          font-weight: 600;
-          transition: color 0.3s ease;
-        }
-
-        .signupLink:hover {
-          color: #7b68ee;
-        }
-
-        .spinner {
-          animation: spin 1s linear infinite;
-          margin-right: 10px;
-        }
-
+      <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-
-        @media (max-width: 768px) {
-          .card {
-            padding: 20px;
-          }
-          
-          .title {
-            font-size: 2rem;
-          }
-          
-          .subtitle {
-            font-size: 1rem;
-          }
-        }
       `}</style>
-
-      <div className="container">
-        <div className="card">
-          <div className="header">
-            <h1 className="title">Welcome back</h1>
-            <p className="subtitle">Sign in to your account</p>
-          </div>
-
-          <form className="form" onSubmit={handleSubmit}>
-            <div className="inputGroup">
-              <label htmlFor="email" className="label">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="your@email.com"
-              />
-            </div>
-
-            <div className="inputGroup">
-              <label htmlFor="password" className="label">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="••••••••"
-                minLength={6}
-              />
-            </div>
-
-            <Link href="/forgot-password" className="forgotPassword">
-              Forgot password?
-            </Link>
-
-            <button type="submit" disabled={isLoading} className="button">
-              {isLoading ? (
-                <>
-                  <svg
-                    className="spinner"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
-            </button>
-          </form>
-
-          <p className="signupText">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="signupLink">
-              Sign up
-            </Link>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
-

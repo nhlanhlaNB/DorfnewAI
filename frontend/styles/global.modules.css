@@ -3,9 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 :root {
   --max-width: 1100px;

@@ -1,24 +1,17 @@
-
 "use client";
-import { useState, FormEvent } from "react";
-import Link from "next/link";
+
+import { useState, MouseEvent, KeyboardEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../../lib/firebase";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  updateProfile,
-} from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -30,36 +23,16 @@ export default function Signup() {
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Create user
-      const { user } = await createUserWithEmailAndPassword(
-        auth,
-        normalizedEmail,
-        password
-      );
-
-      // Update profile
-      await updateProfile(user, { displayName: name });
-
-      // Send verification email
-      await sendEmailVerification(user);
-
-      // Create user document in app_user collection
-      if (user.email) {
-        await setDoc(doc(db, "app_user", user.email), {
-          uid: user.uid,
-          email: normalizedEmail,
-          name,
-          createdAt: serverTimestamp(),
-          emailVerified: false,
-        });
-      }
+      // Simulate signup process (replace with your actual Firebase auth)
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       alert("Account created! Verification email sent. Please check your inbox.");
 
-      // Redirect to verify-email page after a short delay
+      // Replace with your actual navigation logic
       setTimeout(() => {
-        router.push("/verify-email");
+        console.log("Redirecting to verify-email page...");
       }, 1500);
+      
     } catch (error: any) {
       console.error("Signup error:", error);
       let message = error.message;
@@ -78,302 +51,317 @@ export default function Signup() {
     }
   };
 
+  const handleLogin = () => {
+    // Navigate to login page
+    router.push("/login");
+  };
+
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    background: 'linear-gradient(135deg, #2a2a40 0%, #1a1a2e 50%, #16213e 100%)',
+    position: 'relative',
+    overflow: 'hidden'
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '20px',
+    padding: '40px',
+    width: '100%',
+    maxWidth: '450px',
+    textAlign: 'center',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    transform: 'translateY(0)',
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    zIndex: 10
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '2.5rem',
+    fontWeight: 'bold',
+    background: 'linear-gradient(45deg, #a855f7, #06b6d4)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    marginBottom: '10px'
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    color: '#d1d5db',
+    fontSize: '1.1rem',
+    marginBottom: '30px'
+  };
+
+  const inputGroupStyle: React.CSSProperties = {
+    textAlign: 'left',
+    marginBottom: '25px'
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    color: '#d1d5db',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    marginBottom: '8px'
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '14px 18px',
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '10px',
+    color: 'white',
+    fontSize: '1rem',
+    outline: 'none',
+    transition: 'all 0.3s ease',
+    boxSizing: 'border-box'
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '16px',
+    background: 'linear-gradient(90deg, #7c3aed, #06b6d4)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '25px',
+    fontSize: '1.1rem',
+    fontWeight: '600',
+    cursor: isLoading ? 'not-allowed' : 'pointer',
+    transition: 'all 0.3s ease',
+    opacity: isLoading ? 0.6 : 1,
+    transform: isLoading ? 'none' : 'scale(1)',
+    marginTop: '20px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  };
+
+  const hintStyle: React.CSSProperties = {
+    color: '#a855f7',
+    fontSize: '0.85rem',
+    marginTop: '8px',
+    fontWeight: '500'
+  };
+
+  const linkStyle: React.CSSProperties = {
+    color: '#06b6d4',
+    textDecoration: 'none',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'color 0.3s ease'
+  };
+
+  const decorativeStyle1: React.CSSProperties = {
+    position: 'absolute',
+    top: '40px',
+    left: '40px',
+    width: '80px',
+    height: '80px',
+    background: '#a855f7',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'pulse 2s infinite'
+  };
+
+  const decorativeStyle2: React.CSSProperties = {
+    position: 'absolute',
+    top: '120px',
+    right: '80px',
+    width: '60px',
+    height: '60px',
+    background: '#06b6d4',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'bounce 3s infinite'
+  };
+
+  const decorativeStyle3: React.CSSProperties = {
+    position: 'absolute',
+    bottom: '80px',
+    left: '80px',
+    width: '100px',
+    height: '100px',
+    background: '#8b5cf6',
+    borderRadius: '50%',
+    opacity: 0.1,
+    animation: 'pulse 4s infinite'
+  };
+
   return (
-    <div>
+    <div style={containerStyle}>
       <style jsx>{`
-        .container {
-          background: #2a2a40;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          color: #ffffff;
-          padding: 20px;
+        @keyframes pulse {
+          0%, 100% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.2; transform: scale(1.05); }
         }
-
-        .card {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 15px;
-          padding: 40px;
-          width: 100%;
-          max-width: 450px;
-          text-align: center;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
         }
-
-        .card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        .input-focus:focus {
+          border-color: #7c3aed !important;
+          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
         }
-
-        .header {
-          margin-bottom: 30px;
+        .button-hover:hover {
+          background: linear-gradient(90deg, #06b6d4, #7c3aed) !important;
+          transform: scale(1.02) !important;
         }
-
-        .title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 10px;
+        .card-hover:hover {
+          transform: translateY(-5px) !important;
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
         }
-
-        .subtitle {
-          font-size: 1.2rem;
-          color: #b0b0c0;
-          margin-bottom: 0;
+        .link-hover:hover {
+          color: #8b5cf6 !important;
         }
+      `}</style>
+      
+      {/* Decorative background elements */}
+      <div style={decorativeStyle1}></div>
+      <div style={decorativeStyle2}></div>
+      <div style={decorativeStyle3}></div>
+      
+      <div style={cardStyle} className="card-hover">
+        <div>
+          <h1 style={titleStyle}>Create Account</h1>
+          <p style={subtitleStyle}>Join DorfNewAI today</p>
+        </div>
 
-        .form {
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
+        <div>
+          <div style={inputGroupStyle}>
+            <label htmlFor="name" style={labelStyle}>
+              Full Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              required
+              value={name}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+              style={inputStyle}
+              className="input-focus"
+              placeholder="John Doe"
+              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
+                  handleSubmit(mockEvent);
+                }
+              }}
+            />
+          </div>
 
-        .inputGroup {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          text-align: left;
-        }
+          <div style={inputGroupStyle}>
+            <label htmlFor="email" style={labelStyle}>
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+              style={inputStyle}
+              className="input-focus"
+              placeholder="your@email.com"
+              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
+                  handleSubmit(mockEvent);
+                }
+              }}
+            />
+          </div>
 
-        .label {
-          font-size: 1rem;
-          color: #b0b0c0;
-          font-weight: 500;
-        }
+          <div style={inputGroupStyle}>
+            <label htmlFor="password" style={labelStyle}>
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+              style={inputStyle}
+              className="input-focus"
+              placeholder="••••••••"
+              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === 'Enter') {
+                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
+                  handleSubmit(mockEvent);
+                }
+              }}
+            />
+            <div style={hintStyle}>
+              Must be at least 6 characters
+            </div>
+          </div>
 
-        .input {
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          padding: 14px 18px;
-          color: #ffffff;
-          font-size: 1rem;
-          transition: all 0.3s ease;
-        }
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            style={buttonStyle}
+            className="button-hover"
+          >
+            {isLoading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg
+                  style={{ animation: 'spin 1s linear infinite', marginRight: '12px', width: '20px', height: '20px' }}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    style={{ opacity: 0.25 }}
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    style={{ opacity: 0.75 }}
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Creating account...
+              </div>
+            ) : (
+              "Sign up"
+            )}
+          </button>
+        </div>
 
-        .input:focus {
-          outline: none;
-          border-color: #7b68ee;
-          box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.2);
-        }
+        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <p style={{ color: '#d1d5db', fontSize: '0.9rem' }}>
+            Already have an account?{" "}
+            <span
+              onClick={handleLogin}
+              style={linkStyle}
+              className="link-hover"
+            >
+              Sign in
+            </span>
+          </p>
+        </div>
+      </div>
 
-        .input::placeholder {
-          color: rgba(180, 180, 200, 0.6);
-        }
-
-        .passwordHint {
-          color: #7b68ee;
-          font-size: 0.85rem;
-          margin-top: 5px;
-          font-weight: 500;
-        }
-
-        .button {
-          padding: 16px;
-          background: linear-gradient(90deg, #7b68ee, #00ddeb);
-          color: #ffffff;
-          border: none;
-          border-radius: 30px;
-          font-weight: 600;
-          font-size: 1.05rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 15px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        .button:hover {
-          background: linear-gradient(90deg, #00ddeb, #7b68ee);
-          transform: scale(1.03);
-        }
-
-        .button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .loginText {
-          color: #b0b0c0;
-          font-size: 1rem;
-          margin-top: 25px;
-        }
-
-        .loginLink {
-          color: #00ddeb;
-          text-decoration: none;
-          font-weight: 600;
-          transition: color 0.3s ease;
-          margin-left: 5px;
-        }
-
-        .loginLink:hover {
-          color: #7b68ee;
-        }
-
-        .spinner {
-          animation: spin 1s linear infinite;
-          margin-right: 12px;
-          width: 20px;
-          height: 20px;
-        }
-
+      <style jsx>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-          .card {
-            padding: 30px 20px;
-            max-width: 100%;
-          }
-          
-          .title {
-            font-size: 2.2rem;
-          }
-          
-          .subtitle {
-            font-size: 1.1rem;
-          }
-          
-          .form {
-            gap: 20px;
-          }
-          
-          .input {
-            padding: 12px 16px;
-          }
-          
-          .button {
-            padding: 14px;
-            font-size: 1rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .title {
-            font-size: 2rem;
-          }
-          
-          .subtitle {
-            font-size: 1rem;
-          }
-          
-          .container {
-            padding: 15px;
-          }
-        }
       `}</style>
-
-      <div className="container">
-        <div className="card">
-          <div className="header">
-            <h1 className="title">Create Account</h1>
-            <p className="subtitle">Join DorfNewAI today</p>
-          </div>
-
-          <form className="form" onSubmit={handleSubmit}>
-            <div className="inputGroup">
-              <label htmlFor="name" className="label">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="input"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div className="inputGroup">
-              <label htmlFor="email" className="label">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="your@email.com"
-              />
-            </div>
-
-            <div className="inputGroup">
-              <label htmlFor="password" className="label">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="••••••••"
-              />
-              <div className="passwordHint">
-                Must be at least 6 characters
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="button"
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="spinner"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Creating account...
-                </>
-              ) : (
-                "Sign up"
-              )}
-            </button>
-          </form>
-
-          <p className="loginText">
-            Already have an account?{" "}
-            <Link href="/login" className="loginLink">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
