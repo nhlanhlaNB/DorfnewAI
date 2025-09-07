@@ -6,7 +6,7 @@
   align-items: center;
   padding: 20px;
   background: linear-gradient(135deg, #2a2a40 0%, #1a1a2e 50%, #16213e 100%);
-  position: centred;
+  position: relative;
   overflow: hidden;
 }
 
@@ -158,7 +158,6 @@
   outline: none;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  text-align: center;
 }
 
 .input:focus {

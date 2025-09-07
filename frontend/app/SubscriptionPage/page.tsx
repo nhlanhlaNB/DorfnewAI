@@ -1,65 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Script from 'next/script';
-import { useRouter } from 'next/navigation';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import styles from '../../styles/SubscriptionPage.module.css';
-
-interface Plan {
-  title: string;
-  price: string;
-  description: string;
-  features: string[];
-  paypalPlanId: string;
-  popular?: boolean;
-}
-
-const plans: Plan[] = [
-  {
-    title: 'Individual',
-    price: '$10',
-    description: 'Ideal for solo creators who want to unlock the full potential of the platform.',
-    features: [
-      'Ad‑free experience',
-      '10 GB storage for uploads',
-      'Access to premium templates',
-      'Advanced analytics',
-      'Priority e‑mail support',
-    ],
-    paypalPlanId: 'P-4SW2058640943662UNBTJI6Y',
-  },
-  {
-    title: 'Business',
-    price: '$35',
-    description: 'Designed for businesses needing advanced features and team collaboration.',
-    features: [
-      'Ad‑free experience',
-      '50 GB storage for uploads',
-      'Access to premium templates',
-      'Advanced analytics',
-      'Team collaboration (up to 5 users)',
-      '24/7 priority support',
-    ],
-    paypalPlanId: 'P-3JC40256EM658594HNBUFIBA',
-    popular: true,
-  },
-  {
-    title: 'Family',
-    price: '$25',
-    description: 'Great for families or small groups, with shared access for up to 4 members.',
-    features: [
-      'Ad‑free experience',
-      '20 GB storage for uploads',
-      'Access to premium templates',
-      'Advanced analytics',
-      'Shared access for 4 members',
-      'Priority e‑mail support',
-    ],
-    paypalPlanId: 'P-3CS59433TT1532629NBT25SQ',
-  },
-];
+import React, { useState, useEffect, useRef } from "react";
+import Script from "next/script";
+import { useRouter } from "next/navigation";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { getFirestore, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import styles from "../../styles/SubscriptionPage.module.css";
+import { PLANS } from "../../lib/plans"; // ✅ import shared plans
 
 export default function SubscriptionPage() {
   const router = useRouter();
@@ -71,8 +18,7 @@ export default function SubscriptionPage() {
   const rendered = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
-    // Initialize Firebase only on client side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const authInstance = getAuth();
       const dbInstance = getFirestore();
       setAuth(authInstance);
@@ -80,7 +26,7 @@ export default function SubscriptionPage() {
 
       const off = onAuthStateChanged(authInstance, (u) => {
         if (!u) {
-          router.push('/login');
+          router.push("/login");
         } else {
           setUser(u);
         }
@@ -93,55 +39,68 @@ export default function SubscriptionPage() {
   useEffect(() => {
     if (!paypalReady || !user || !db) return;
 
-    plans.forEach((plan) => {
+    PLANS.forEach((plan) => {
       const container = document.getElementById(
-        `paypal-button-container-${plan.paypalPlanId}`,
+        `paypal-button-container-${plan.paypalPlanId}`
       );
       if (
         container &&
         !rendered.current[plan.paypalPlanId] &&
         (window as any).paypal?.Buttons
       ) {
-        (window as any).paypal.Buttons({
-          style: {
-            shape: 'rect',
-            color: 'gold',
-            layout: 'vertical',
-            label: 'subscribe',
-          },
-          createSubscription: (_data: any, actions: any) =>
-            actions.subscription.create({ plan_id: plan.paypalPlanId }),
-          onApprove: async (data: any) => {
-            try {
-              // Update Firestore with subscription details
-              const userId = user?.email ?? user?.uid;
-              if (!userId) {
-                console.error("No authenticated user identifier available to update subscription.");
-                alert("Subscription successful, but failed to update user data because user info is missing. Please contact support.");
-                router.push('/dashboard');
-                return;
-              }
-              const userDocRef = doc(db, "app_user", userId);
-              await setDoc(userDocRef, {
-                subscribed: true,
-                planId: plan.paypalPlanId,
-                subscriptionId: data.subscriptionID,
-                price: plan.price.replace('$', ''), // e.g., "10.00"
-                updatedAt: serverTimestamp(),
-              }, { merge: true });
+        (window as any).paypal
+          .Buttons({
+            style: {
+              shape: "rect",
+              color: "gold",
+              layout: "vertical",
+              label: "subscribe",
+            },
+            createSubscription: (_data: any, actions: any) =>
+              actions.subscription.create({ plan_id: plan.paypalPlanId }),
+            onApprove: async (data: any) => {
+              try {
+                const userId = user?.email ?? user?.uid;
+                if (!userId) {
+                  console.error(
+                    "No authenticated user identifier available to update subscription."
+                  );
+                  alert(
+                    "Subscription successful, but failed to update user data because user info is missing. Please contact support."
+                  );
+                  router.push("/dashboard");
+                  return;
+                }
+                const userDocRef = doc(db, "app_user", userId);
+                await setDoc(
+                  userDocRef,
+                  {
+                    subscribed: true,
+                    planId: plan.paypalPlanId,
+                    subscriptionId: data.subscriptionID,
+                    price: plan.price.replace("$", ""),
+                    updatedAt: serverTimestamp(),
+                  },
+                  { merge: true }
+                );
 
-              alert(`Thanks for subscribing!\nSubscription ID: ${data.subscriptionID}`);
-              router.push('/dashboard'); // Redirect to dashboard after successful subscription
-            } catch (error) {
-              console.error("Error updating subscription:", error);
-              alert("Subscription successful, but failed to update user data. Please contact support.");
-            }
-          },
-          onError: (err: any) => {
-            console.error("PayPal subscription error:", err);
-            alert("An error occurred during subscription. Please try again.");
-          },
-        }).render(container);
+                alert(
+                  `Thanks for subscribing!\nSubscription ID: ${data.subscriptionID}`
+                );
+                router.push("/dashboard");
+              } catch (error) {
+                console.error("Error updating subscription:", error);
+                alert(
+                  "Subscription successful, but failed to update user data. Please contact support."
+                );
+              }
+            },
+            onError: (err: any) => {
+              console.error("PayPal subscription error:", err);
+              alert("An error occurred during subscription. Please try again.");
+            },
+          })
+          .render(container);
 
         rendered.current[plan.paypalPlanId] = true;
       }
@@ -165,12 +124,12 @@ export default function SubscriptionPage() {
         data-sdk-integration-source="button-factory"
         onLoad={() => setPaypalReady(true)}
       />
-      
+
       <div className={styles.pageWrapper}>
         <header className={styles.header}>
           <button
             className={styles.closeButton}
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push("/dashboard")}
             aria-label="Back to dashboard"
           >
             <i className="fas fa-times" />
@@ -183,11 +142,11 @@ export default function SubscriptionPage() {
             without limits!
           </p>
           <div className={styles.pricingContainer}>
-            {plans.map((plan) => (
+            {PLANS.map((plan) => (
               <div
                 key={plan.title}
                 className={`${styles.planCard} ${
-                  plan.popular ? styles.popularPlan : ''
+                  plan.popular ? styles.popularPlan : ""
                 }`}
               >
                 {plan.popular && (
@@ -216,8 +175,8 @@ export default function SubscriptionPage() {
         </main>
         <footer className={styles.footer}>
           <p>
-            <i className="fas fa-copyright" /> {new Date().getFullYear()} 
-            DorfNewAI. All rights reserved.
+            <i className="fas fa-copyright" /> {new Date().getFullYear()} DorfNewAI.
+            All rights reserved.
           </p>
           <p className={styles.termsLink}>
             <a
