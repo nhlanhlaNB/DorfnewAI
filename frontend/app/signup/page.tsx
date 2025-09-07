@@ -1,242 +1,178 @@
 "use client";
 
-import { useState, MouseEvent, KeyboardEvent, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
+import { 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  sendEmailVerification,
+  signInWithPopup,
+  GoogleAuthProvider,
+  OAuthProvider 
+} from "firebase/auth";
+import { auth, db } from "../../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import styles from "./signup.module.css";
 
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState({ google: false, apple: false });
+  const [error, setError] = useState("");
 
   const router = useRouter();
+  const googleProvider = new GoogleAuthProvider();
+  const appleProvider = new OAuthProvider('apple.com');
 
-  const handleSubmit = async (e: MouseEvent<HTMLButtonElement>) => {
+  // Set up Apple provider parameters
+  appleProvider.addScope('email');
+  appleProvider.addScope('name');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
     try {
       // Basic validation
+      if (!name || !email || !password) {
+        setError("Please fill in all fields");
+        return;
+      }
+
       if (password.length < 6) {
-        throw new Error("Password must be at least 6 characters");
+        setError("Password must be at least 6 characters");
+        return;
       }
 
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Simulate signup process (replace with your actual Firebase auth)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create user with Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
+      const user = userCredential.user;
 
-      alert("Account created! Verification email sent. Please check your inbox.");
+      // Update profile with name
+      await updateProfile(user, {
+        displayName: name
+      });
 
-      // Replace with your actual navigation logic
-      setTimeout(() => {
-        console.log("Redirecting to verify-email page...");
-      }, 1500);
+      // Create user document in Firestore with error handling
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          name: name,
+          email: normalizedEmail,
+          createdAt: new Date(),
+          emailVerified: false,
+          role: "user",
+          preferences: {},
+          authProvider: "email"
+        });
+      } catch (firestoreError) {
+        console.error("Firestore error:", firestoreError);
+        // Don't throw error here - the user account was created successfully
+      }
+
+      // Send verification email
+      await sendEmailVerification(user);
+
+      // Redirect to verify-email page
+      router.push("/verify-email");
       
     } catch (error: any) {
       console.error("Signup error:", error);
-      let message = error.message;
-
+      
+      let message = "Signup failed. Please try again.";
+      
       if (error.code === "auth/email-already-in-use") {
         message = "Email already in use. Try logging in instead.";
       } else if (error.code === "auth/weak-password") {
         message = "Password should be at least 6 characters";
       } else if (error.code === "auth/invalid-email") {
-        message = "Please enter a valid email address";
+        message = "Please enter a valid email address.";
+      } else if (error.code === "auth/operation-not-allowed") {
+        message = "Email/password accounts are not enabled. Please contact support.";
       }
-
-      alert(message);
+      
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleSocialSignIn = async (provider: "google" | "apple") => {
+    setSocialLoading(prev => ({ ...prev, [provider]: true }));
+    setError("");
+
+    try {
+      const selectedProvider = provider === "google" ? googleProvider : appleProvider;
+      const result = await signInWithPopup(auth, selectedProvider);
+      const user = result.user;
+
+      // Create user document in Firestore
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName,
+          email: user.email,
+          createdAt: new Date(),
+          emailVerified: user.emailVerified,
+          role: "user",
+          preferences: {},
+          authProvider: provider
+        }, { merge: true }); // Use merge to not overwrite existing data
+      } catch (firestoreError) {
+        console.error("Firestore error:", firestoreError);
+      }
+
+      // Redirect to dashboard
+      router.push("/dashboard");
+      
+    } catch (error: any) {
+      console.error(`${provider} signin error:`, error);
+      
+      let message = `Sign in with ${provider === "google" ? "Google" : "Apple"} failed.`;
+      
+      if (error.code === "auth/popup-closed-by-user") {
+        message = "Sign in was canceled.";
+      } else if (error.code === "auth/account-exists-with-different-credential") {
+        message = "An account already exists with the same email address but different sign-in credentials.";
+      } else if (error.code === "auth/operation-not-supported") {
+        message = "This sign-in method is not supported in your browser.";
+      }
+      
+      setError(message);
+    } finally {
+      setSocialLoading(prev => ({ ...prev, [provider]: false }));
+    }
+  };
+
   const handleLogin = () => {
-    // Navigate to login page
     router.push("/login");
   };
 
-  const containerStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '20px',
-    background: 'linear-gradient(135deg, #2a2a40 0%, #1a1a2e 50%, #16213e 100%)',
-    position: 'relative',
-    overflow: 'hidden'
-  };
-
-  const cardStyle: React.CSSProperties = {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: '20px',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '450px',
-    textAlign: 'center',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    transform: 'translateY(0)',
-    transition: 'all 0.3s ease',
-    position: 'relative',
-    zIndex: 10
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: '2.5rem',
-    fontWeight: 'bold',
-    background: 'linear-gradient(45deg, #a855f7, #06b6d4)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    marginBottom: '10px'
-  };
-
-  const subtitleStyle: React.CSSProperties = {
-    color: '#d1d5db',
-    fontSize: '1.1rem',
-    marginBottom: '30px'
-  };
-
-  const inputGroupStyle: React.CSSProperties = {
-    textAlign: 'left',
-    marginBottom: '25px'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    color: '#d1d5db',
-    fontSize: '0.9rem',
-    fontWeight: '500',
-    marginBottom: '8px'
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '14px 18px',
-    background: 'rgba(255, 255, 255, 0.08)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '10px',
-    color: 'white',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'all 0.3s ease',
-    boxSizing: 'border-box'
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '16px',
-    background: 'linear-gradient(90deg, #7c3aed, #06b6d4)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '25px',
-    fontSize: '1.1rem',
-    fontWeight: '600',
-    cursor: isLoading ? 'not-allowed' : 'pointer',
-    transition: 'all 0.3s ease',
-    opacity: isLoading ? 0.6 : 1,
-    transform: isLoading ? 'none' : 'scale(1)',
-    marginTop: '20px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-  };
-
-  const hintStyle: React.CSSProperties = {
-    color: '#a855f7',
-    fontSize: '0.85rem',
-    marginTop: '8px',
-    fontWeight: '500'
-  };
-
-  const linkStyle: React.CSSProperties = {
-    color: '#06b6d4',
-    textDecoration: 'none',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'color 0.3s ease'
-  };
-
-  const decorativeStyle1: React.CSSProperties = {
-    position: 'absolute',
-    top: '40px',
-    left: '40px',
-    width: '80px',
-    height: '80px',
-    background: '#a855f7',
-    borderRadius: '50%',
-    opacity: 0.1,
-    animation: 'pulse 2s infinite'
-  };
-
-  const decorativeStyle2: React.CSSProperties = {
-    position: 'absolute',
-    top: '120px',
-    right: '80px',
-    width: '60px',
-    height: '60px',
-    background: '#06b6d4',
-    borderRadius: '50%',
-    opacity: 0.1,
-    animation: 'bounce 3s infinite'
-  };
-
-  const decorativeStyle3: React.CSSProperties = {
-    position: 'absolute',
-    bottom: '80px',
-    left: '80px',
-    width: '100px',
-    height: '100px',
-    background: '#8b5cf6',
-    borderRadius: '50%',
-    opacity: 0.1,
-    animation: 'pulse 4s infinite'
-  };
-
   return (
-    <div style={containerStyle}>
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.1; transform: scale(1); }
-          50% { opacity: 0.2; transform: scale(1.05); }
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        .input-focus:focus {
-          border-color: #7c3aed !important;
-          box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
-        }
-        .button-hover:hover {
-          background: linear-gradient(90deg, #06b6d4, #7c3aed) !important;
-          transform: scale(1.02) !important;
-        }
-        .card-hover:hover {
-          transform: translateY(-5px) !important;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
-        }
-        .link-hover:hover {
-          color: #8b5cf6 !important;
-        }
-      `}</style>
-      
+    <div className={styles.container}>
       {/* Decorative background elements */}
-      <div style={decorativeStyle1}></div>
-      <div style={decorativeStyle2}></div>
-      <div style={decorativeStyle3}></div>
+      <div className={styles.decorative1}></div>
+      <div className={styles.decorative2}></div>
+      <div className={styles.decorative3}></div>
       
-      <div style={cardStyle} className="card-hover">
+      <div className={styles.card}>
         <div>
-          <h1 style={titleStyle}>Create Account</h1>
-          <p style={subtitleStyle}>Join DorfNewAI today</p>
+          <h1 className={styles.title}>Create Account</h1>
+          <p className={styles.subtitle}>Join DorfNewAI today</p>
         </div>
 
-        <div>
-          <div style={inputGroupStyle}>
-            <label htmlFor="name" style={labelStyle}>
+        {error && (
+          <div className={styles.error}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="name" className={styles.label}>
               Full Name
             </label>
             <input
@@ -245,20 +181,13 @@ export default function Signup() {
               required
               value={name}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              style={inputStyle}
-              className="input-focus"
+              className={styles.input}
               placeholder="John Doe"
-              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') {
-                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
-                  handleSubmit(mockEvent);
-                }
-              }}
             />
           </div>
 
-          <div style={inputGroupStyle}>
-            <label htmlFor="email" style={labelStyle}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="email" className={styles.label}>
               Email
             </label>
             <input
@@ -267,20 +196,13 @@ export default function Signup() {
               required
               value={email}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              style={inputStyle}
-              className="input-focus"
+              className={styles.input}
               placeholder="your@email.com"
-              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') {
-                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
-                  handleSubmit(mockEvent);
-                }
-              }}
             />
           </div>
 
-          <div style={inputGroupStyle}>
-            <label htmlFor="password" style={labelStyle}>
+          <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.label}>
               Password
             </label>
             <input
@@ -290,38 +212,28 @@ export default function Signup() {
               minLength={6}
               value={password}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-              style={inputStyle}
-              className="input-focus"
+              className={styles.input}
               placeholder="••••••••"
-              onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') {
-                  const mockEvent = { preventDefault: () => {} } as MouseEvent<HTMLButtonElement>;
-                  handleSubmit(mockEvent);
-                }
-              }}
             />
-            <div style={hintStyle}>
+            <div className={styles.hint}>
               Must be at least 6 characters
             </div>
           </div>
 
           <button
             type="submit"
-            onClick={handleSubmit}
             disabled={isLoading}
-            style={buttonStyle}
-            className="button-hover"
+            className={styles.button}
           >
             {isLoading ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className={styles.buttonContent}>
                 <svg
-                  style={{ animation: 'spin 1s linear infinite', marginRight: '12px', width: '20px', height: '20px' }}
+                  className={styles.spinner}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                 >
                   <circle
-                    style={{ opacity: 0.25 }}
                     cx="12"
                     cy="12"
                     r="10"
@@ -329,7 +241,6 @@ export default function Signup() {
                     strokeWidth="4"
                   ></circle>
                   <path
-                    style={{ opacity: 0.75 }}
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
@@ -337,31 +248,71 @@ export default function Signup() {
                 Creating account...
               </div>
             ) : (
-              "Sign up"
+              "Sign up with Email"
+            )}
+          </button>
+        </form>
+
+        <div className={styles.divider}>
+          <span>or</span>
+        </div>
+      {/* Social login buttons */}
+        <div className={styles.socialButtons}>
+          <button
+            onClick={() => handleSocialSignIn("google")}
+            disabled={socialLoading.google}
+            className={`${styles.socialButton} ${styles.googleButton}`}
+          >
+            {socialLoading.google ? (
+              <div className={styles.socialButtonContent}>
+                <div className={styles.socialSpinner}></div>
+                Signing in...
+              </div>
+            ) : (
+              <div className={styles.socialButtonContent}>
+                <svg className={styles.socialIcon} viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign up with Google
+              </div>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleSocialSignIn("apple")}
+            disabled={socialLoading.apple}
+            className={`${styles.socialButton} ${styles.appleButton}`}
+          >
+            {socialLoading.apple ? (
+              <div className={styles.socialButtonContent}>
+                <div className={styles.socialSpinner}></div>
+                Signing in...
+              </div>
+            ) : (
+              <div className={styles.socialButtonContent}>
+                <svg className={styles.socialIcon} viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/>
+                </svg>
+                Sign up with Apple
+              </div>
             )}
           </button>
         </div>
-
-        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <p style={{ color: '#d1d5db', fontSize: '0.9rem' }}>
-            Already have an account?{" "}
-            <span
-              onClick={handleLogin}
-              style={linkStyle}
-              className="link-hover"
-            >
-              Sign in
-            </span>
-          </p>
-        </div>
+      <div className={styles.footer}>
+          <p className={styles.footerText}>
+              Already have an account?{" "}
+              <span
+                onClick={handleLogin}
+                className={styles.link}
+              >
+                Sign in
+              </span>
+            </p>
       </div>
-
-      <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      </div>
     </div>
   );
 }
