@@ -50,7 +50,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Ensure video fills the container */
+  z-index: 1; /* Below overlay */
 }
 
 .heroOverlay {
@@ -607,7 +608,13 @@
   }
 
   .hero {
-    height: 200px;
+    height: 200px; /* Adjusted for smaller screens */
+  }
+
+  .heroVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure video fills container */
   }
 
   .hero h1 {
@@ -619,8 +626,8 @@
   }
 
   .generationBox {
-    width: 400px;
-    padding: 30px;
+    width: 95%; /* Full width for small screens */
+    padding: 20px;
   }
 
   .generationPreview {
@@ -633,7 +640,7 @@
   }
 
   .articleBox {
-    width: 350px;
+    width: 95%;
     padding: 15px;
   }
 }

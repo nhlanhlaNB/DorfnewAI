@@ -37,7 +37,7 @@ interface MainContentProps {
 
 export default function MainContent({ onGenerateClick }: MainContentProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false); // Set to false by default
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<keyof DummyMedia | null>(null);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -60,8 +60,8 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       },
       {
         type: "video",
-        src: "https://videos.pexels.com/video-files/3209298/3209298-hd_1920_1080_25fps.mp4",
-        title: "Nature Video 2",
+        src: "https://videocdn.cdnpk.net/videos/015faed0-10ac-52ef-bd51-c6e06feec41e/horizontal/previews/clear/large.mp4?token=exp=1757545891~hmac=bb5bf20b4c16fec8a822d1ea24fc6c8b90ce7745496fc344bf2e8545a9ac02ce",
+        title: "Space Scenic Video",
       },
       {
         type: "video",
@@ -128,19 +128,19 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     image: [
       {
         type: "image",
-        src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-        title: "Fallback Wildlife Image 1",
+        src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
+        title: "Fallback Space Image",
       },
       {
         type: "image",
         src: "https://pics.craiyon.com/2023-10-31/93234f8584254bf88c6d27430f35cba2.webp",
-        title: "Fallback Wildlife Image 2",
+        title: "Fallback Wildlife Image",
       },
     ],
     video: {
-      type: "image",
-      src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
-      title: "Fallback Space Image",
+      type: "video",
+      src: "https://videocdn.cdnpk.net/videos/015faed0-10ac-52ef-bd51-c6e06feec41e/horizontal/previews/clear/large.mp4?token=exp=1757545891~hmac=bb5bf20b4c16fec8a822d1ea24fc6c8b90ce7745496fc344bf2e8545a9ac02ce",
+      title: "Fallback Space Scenic Video",
     },
     audio: {
       type: "audio",
@@ -504,14 +504,16 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       )}
 
       <div className={styles.hero}>
-        <iframe
+        <video
           className={styles.heroVideo}
-          src="https://www.youtube.com/embed/Bbp1-p2FoXU?autoplay=1&mute=1&loop=1&playlist=Bbp1-p2FoXU"
-          title="Night Sky Stars Timelapse"
-          frameBorder="0"
-          allow="autoplay; encrypted-media"
-          allowFullScreen
-        ></iframe>
+          src="https://videocdn.cdnpk.net/videos/015faed0-10ac-52ef-bd51-c6e06feec41e/horizontal/previews/clear/large.mp4?token=exp=1757545891~hmac=bb5bf20b4c16fec8a822d1ea24fc6c8b90ce7745496fc344bf2e8545a9ac02ce"
+          title="Space Scenic Video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-label="Space Scenic Video Background"
+        />
         <div className={styles.heroOverlay}>
           <h1>Welcome to Dorfnew</h1>
           <p>Discover and Generate Amazing AI Content</p>
