@@ -31,6 +31,12 @@ interface DummyMedia {
   Music: MediaItem[];
 }
 
+interface Insight {
+  title: string;
+  shortDescription: string;
+  fullDescription: string;
+}
+
 interface MainContentProps {
   onGenerateClick: React.MutableRefObject<((value: string) => void) | null>;
 }
@@ -42,6 +48,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+  const [selectedInsight, setSelectedInsight] = useState<Insight | null>(null);
 
   const topics: Topic[] = [
     { name: "Sports", color: "#ff6b6b" },
@@ -51,7 +58,28 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     { name: "Images", color: "#00ddeb" },
   ];
 
-  const dummyMedia: DummyMedia = {
+  const insights: Insight[] = [
+    {
+      title: "Text-to-Image Generation",
+      shortDescription: "AI creates images from text prompts using models like Stable Diffusion.",
+      fullDescription:
+        "Text-to-image generation uses deep learning models, such as Stable Diffusion or DALL·E, to convert text prompts into visual images. These models are trained on vast datasets of image-text pairs, learning to map textual descriptions to visual features. The process involves a diffusion model that iteratively refines random noise into a coherent image based on the input prompt.",
+    },
+    {
+      title: "Text-to-Video Generation",
+      shortDescription: "AI generates dynamic videos from text descriptions.",
+      fullDescription:
+        "Text-to-video generation extends text-to-image concepts to create short video clips. Models like Runway or Sora use temporal coherence to ensure smooth frame transitions. They are trained on video datasets to understand motion and context, generating videos from prompts like 'a futuristic city at night.' This technology is advancing rapidly for creative and commercial use.",
+    },
+    {
+      title: "AI Model Training",
+      shortDescription: "How AI models learn from data to generate content.",
+      fullDescription:
+        "AI models are trained using large datasets and techniques like supervised learning or reinforcement learning. For generation tasks, models like GANs or transformers are fed millions of examples (e.g., images, videos) to learn patterns. Training involves optimizing parameters to minimize errors, often requiring significant computational power on GPUs or TPUs.",
+    },
+  ];
+
+   const dummyMedia: DummyMedia = {
     Videos: [
       {
         type: "image",
@@ -397,6 +425,14 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     }
   };
 
+  const handleInsightClick = (insight: Insight) => {
+    setSelectedInsight(insight);
+  };
+
+  const closeInsightModal = () => {
+    setSelectedInsight(null);
+  };
+
   if (isLoading) {
     return (
       <div className={styles.loadingScreen}>
@@ -503,16 +539,32 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         </div>
       )}
 
+      {selectedInsight && (
+        <div className={styles.insightModal}>
+          <div className={styles.insightBox} role="dialog" aria-labelledby="insight-title">
+            <h3 id="insight-title">{selectedInsight.title}</h3>
+            <p className={styles.insightFullDescription}>{selectedInsight.fullDescription}</p>
+            <button
+              className={styles.closeButton}
+              onClick={closeInsightModal}
+              aria-label="Close insight modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.hero}>
         <video
           className={styles.heroVideo}
           src="https://videocdn.cdnpk.net/videos/015faed0-10ac-52ef-bd51-c6e06feec41e/horizontal/previews/clear/large.mp4?token=exp=1757545891~hmac=bb5bf20b4c16fec8a822d1ea24fc6c8b90ce7745496fc344bf2e8545a9ac02ce"
-          title="Space Scenic Video"
+          title="Sample Video"
           autoPlay
           muted
           loop
           playsInline
-          aria-label="Space Scenic Video Background"
+          aria-label="Video Background"
         />
         <div className={styles.heroOverlay}>
           <h1>Welcome to Dorfnew</h1>
@@ -602,6 +654,32 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
           </button>
         </section>
       )}
+
+      <section className={styles.aiInsights}>
+        <h2>Learn About AI Generation</h2>
+        <div className={styles.insightGrid}>
+          {insights.map((insight, index) => (
+            <div key={index} className={styles.insightCard}>
+              <h3 className={styles.insightTitle}>{insight.title}</h3>
+              <p className={styles.insightDescription}>{insight.shortDescription}</p>
+              <button
+                className={styles.insightButton}
+                onClick={() => handleInsightClick(insight)}
+                aria-label={`Learn more about ${insight.title}`}
+              >
+                Learn More
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          className={styles.insightButton}
+          onClick={() => handleGenerateSimilar("Generate an AI-created image")}
+          aria-label="Try AI generation"
+        >
+          Try AI Generation
+        </button>
+      </section>
     </div>
   );
 }
