@@ -188,11 +188,12 @@
 .mediaCard {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 15px;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   transition: all 0.3s ease;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
 }
 
 .mediaCard:hover {
@@ -202,10 +203,11 @@
 
 .mediaActions {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  bottom: 10px;
+  right: 10px;
   display: flex;
   gap: 10px;
+  z-index: 10;
 }
 
 .favoriteButton, .deleteButton {
@@ -537,6 +539,11 @@
 }
 
 @media (max-width: 480px) {
+  .libraryContainer {
+    padding: 10px; /* Reduced padding to fit content */
+    overflow-x: hidden;
+  }
+
   .iconContainer svg {
     font-size: 3rem;
   }
@@ -548,12 +555,59 @@
   .closeButton,
   .modalButton,
   .modalCancelButton {
-    padding: 10px 15px;
-    font-size: 0.9rem;
+    padding: 5px 8px; /* Smaller buttons */
+    font-size: 0.6rem;
   }
 
   .mediaGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Single column, no min-width */
+    gap: 10px;
+  }
+
+  .mediaCard {
+    max-width: 90vw; /* Constrain to viewport width */
+    width: 100%;
+    min-height: 180px; /* Smaller card height */
+    overflow: visible;
+  }
+
+  .mediaContent,
+  .audioPlaceholder {
+    height: 100px; /* Smaller media height */
+    width: 100%;
+  }
+
+  .mediaActions {
+    bottom: 10px;
+    right: 10px;
+    gap: 5px; /* Tighter button spacing */
+    z-index: 10;
+  }
+
+  .favoriteButton,
+  .deleteButton {
+    padding: 5px; /* Smaller buttons */
+  }
+
+  .favoriteButton svg,
+  .deleteButton svg {
+    font-size: 0.7rem; /* Smaller icons */
+  }
+
+  .mediaTitle {
+    font-size: 0.8rem; /* Smaller title */
+    margin: 5px 10px;
+  }
+
+  .mediaDate {
+    font-size: 0.6rem; /* Smaller date */
+    margin: 0 10px 5px;
+  }
+
+  .downloadButton {
+    padding: 4px 10px;
+    font-size: 0.6rem;
+    margin: 0 10px 10px;
   }
 
   .searchBar {
