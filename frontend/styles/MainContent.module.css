@@ -1,244 +1,383 @@
+/* Main content container with a sleek gradient background */
 .mainContent {
-  padding: 30px;
-  background: #1e1e2f;
+  padding: 40px;
+  background: linear-gradient(135deg, #1e1e2f 0%, #2a2a3a 100%);
   color: #ffffff;
   flex: 1;
   font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInBackground 1s ease-in-out;
 }
 
+/* Loading screen */
+.loadingScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #1e1e2f 0%, #2a2a3a 100%);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Subtle background animation */
+@keyframes fadeInBackground {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Hero section styles */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.heroVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 24px;
+  font-weight: 500;
+  margin-bottom: 30px;
+}
+
+.heroButton {
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
+  color: #ffffff;
+  border: none;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.heroButton:hover {
+  transform: scale(1.1);
+}
+
+/* Featured section */
+.featured {
+  margin-bottom: 40px;
+}
+
+.featured h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.featuredCard {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.featuredMedia {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.featuredTitle {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.featuredPrompt {
+  font-size: 14px;
+  color: #d0d0e0;
+  margin-bottom: 10px;
+}
+
+.featuredButton {
+  padding: 6px 12px;
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
+  color: #ffffff;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Section headers with bold typography and gradient underline */
 .exploreTopics h2,
-.yourSubscriptions h2,
 .mediaDisplay h3,
 .sportsNews h2 {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 15px;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 20px;
   color: #ffffff;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
 }
 
+.exploreTopics h2::after,
+.mediaDisplay h3::after,
+.sportsNews h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  height: 3px;
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
+  border-radius: 2px;
+}
+
+/* Topics grid with vibrant cards and hover effects */
 .topicsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .topicCard {
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
   text-align: center;
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
-  transition: all 0.3s ease;
+  background: linear-gradient(45deg, #3a3a4a, #4a4a5a);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
 .topicCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(45deg, #00ddeb, #7b68ee);
 }
 
+.topicCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.topicCard:hover::before {
+  left: 100%;
+}
+
+/* Media display section */
 .mediaDisplay {
-  margin-top: 30px;
+  margin-top: 40px;
+  animation: slideIn 0.6s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .mediaGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .mediaCard {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mediaCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .mediaContent {
   width: 100%;
-  max-height: 150px;
+  max-height: 180px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: transform 0.3s ease;
+}
+
+.mediaCard:hover .mediaContent {
+  transform: scale(1.05);
 }
 
 .mediaTitle {
-  font-size: 12px;
-  color: #b0b0c0;
-  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #d0d0e0;
+  margin: 0 0 12px 0;
+  font-weight: 600;
 }
 
-.downloadButton {
+/* Buttons with gradient effects */
+.downloadButton,
+.readMoreButton {
   display: inline-block;
   padding: 6px 12px;
-  background: #00ddeb;
+  background: linear-gradient(90deg, #00ddeb, #7b68ee);
   color: #ffffff;
   border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 700;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.downloadButton:hover {
-  background: #7b68ee;
-  transform: scale(1.05);
+.downloadButton:hover,
+.readMoreButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 221, 235, 0.4);
 }
 
+/* Close button */
 .closeButton {
   padding: 6px 12px;
-  background: #ff6b6b;
+  background: linear-gradient(90deg, #ff6b6b, #ff8e53);
   color: #ffffff;
   border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-  margin: 15px auto 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .closeButton:hover {
-  background: #ff8e53;
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
 }
 
-.yourSubscriptions {
-  margin-top: 30px;
-}
-
-.subscriptionsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-}
-
-.subscriptionCard {
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s ease;
-}
-
-.subscriptionCard:hover {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.channelInfo h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  color: #ffffff;
-}
-
-.creator {
-  font-size: 12px;
-  color: #b0b0c0;
-  margin: 5px 0;
-}
-
-.preview {
-  font-size: 10px;
-  color: #b0b0c0;
-  margin: 5px 0 0;
-}
-
-.unsubscribeButton {
-  padding: 6px 12px;
-  background: #ff6b6b;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.unsubscribeButton:hover {
-  background: #ff8e53;
-  transform: scale(1.05);
-}
-
-.noSubscriptions {
-  font-size: 14px;
-  color: #b0b0c0;
-  text-align: center;
-  padding: 15px;
-}
-
+/* Generation modal with enhanced visuals */
 .generationModal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
 .generationBox {
   background: #2a2a3a;
-  padding: 40px;
+  padding: 50px;
   border-radius: 20px;
-  width: 700px;
+  width: 800px;
   max-width: 95%;
-  max-height: 95%;
+  max-height: 90vh;
   text-align: center;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
-  animation: fadeIn 0.4s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  animation: zoomIn 0.5s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow-y: auto;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .generationBox h3 {
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   color: #ffffff;
-  font-size: 28px;
+  font-size: 32px;
+  font-weight: 800;
 }
 
 .progressBar {
   width: 100%;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
   overflow: hidden;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
 .progressFill {
   height: 100%;
   background: linear-gradient(90deg, #00ddeb, #7b68ee);
-  transition: width 0.4s ease;
-  border-radius: 6px;
+  transition: width 0.5s ease-in-out;
+  border-radius: 7px;
 }
 
 .progressText {
-  color: #b0b0c0;
-  font-size: 16px;
-  margin-bottom: 25px;
+  color: #d0d0e0;
+  font-size: 18px;
+  margin-bottom: 30px;
+  font-weight: 600;
 }
 
 .generationPreview {
   position: relative;
   width: 100%;
-  max-height: 500px;
+  max-height: 550px;
   margin: 0 auto;
   border-radius: 15px;
   overflow: hidden;
@@ -250,7 +389,7 @@
 
 .imageContainer {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
   height: 100%;
   justify-content: space-between;
@@ -263,29 +402,30 @@
   align-items: center;
 }
 
-.generationPreviewImage {
-  width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.imageTitle {
-  font-size: 12px;
-  color: #b0b0c0;
-  margin-top: 10px;
-}
-
+.generationPreviewImage,
 .generationPreviewVideo {
   width: 100%;
-  max-height: 400px;
+  max-height: 450px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.generationPreviewImage:hover,
+.generationPreviewVideo:hover {
+  transform: scale(1.05);
 }
 
 .generationPreviewAudio {
   width: 100%;
   margin: 0 auto;
+}
+
+.imageTitle {
+  font-size: 14px;
+  color: #d0d0e0;
+  margin-top: 12px;
+  font-weight: 600;
 }
 
 .blurOverlay {
@@ -294,163 +434,155 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1;
-  transition: all 0.4s ease;
+  transition: opacity 0.5s ease;
 }
 
 .generationActions {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-top: 25px;
+  gap: 20px;
+  margin-top: 30px;
 }
 
+/* Sports news section */
 .sportsNews {
-  margin-top: 30px;
+  margin-top: 40px;
+  animation: slideIn 0.6s ease-out;
 }
 
 .newsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .newsCard {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 15px;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .newsCard:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .newsImage {
   width: 100%;
-  height: 150px;
+  height: 160px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: 10px;
+  margin-bottom: 12px;
 }
 
 .newsTitle {
-  font-size: 12px;
-  color: #b0b0c0;
+  font-size: 14px;
+  color: #d0d0e0;
   margin: 0;
+  font-weight: 600;
 }
 
 .noNews {
-  font-size: 14px;
-  color: #b0b0c0;
+  font-size: 16px;
+  color: #d0d0e0;
   text-align: center;
-  padding: 15px;
+  padding: 20px;
+  font-weight: 500;
 }
 
+/* Article modal */
 .articleModal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1100;
+  backdrop-filter: blur(5px);
 }
 
 .articleBox {
   background: #2a2a3a;
-  padding: 20px;
+  padding: 25px;
   border-radius: 15px;
-  width: 600px;
+  width: 700px;
   max-width: 95%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
   text-align: left;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
-  animation: fadeIn 0.4s ease;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  animation: zoomIn 0.5s ease;
 }
 
 .articleBox h3 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   color: #ffffff;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .articleImage {
   width: 100%;
-  max-height: 300px;
+  max-height: 350px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
-.articleSource {
-  font-size: 14px;
-  color: #b0b0c0;
-  margin-bottom: 10px;
-}
-
+.articleSource,
 .articlePublished {
-  font-size: 14px;
-  color: #b0b0c0;
-  margin-bottom: 15px;
+  font-size: 15px;
+  color: #d0d0e0;
+  margin-bottom: 12px;
 }
 
 .articleDescription {
-  font-size: 16px;
+  font-size: 17px;
   color: #ffffff;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  font-weight: 500;
 }
 
 .articleContent {
-  font-size: 14px;
-  color: #b0b0c0;
-  margin-bottom: 15px;
-}
-
-.readMoreButton {
-  display: inline-block;
-  padding: 6px 12px;
-  background: #00ddeb;
-  color: #ffffff;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  margin-bottom: 15px;
-}
-
-.readMoreButton:hover {
-  background: #7b68ee;
-  transform: scale(1.05);
-}
-
-.mediaTypeGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin-bottom: 25px;
+  font-size: 15px;
+  color: #d0d0e0;
+  margin-bottom: 20px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .generationBox {
-    width: 500px;
+  .mainContent {
     padding: 30px;
   }
-  
+
+  .hero {
+    height: 250px;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+  }
+
+  .hero p {
+    font-size: 20px;
+  }
+
+  .generationBox {
+    width: 600px;
+    padding: 40px;
+  }
+
   .generationPreview {
-    max-height: 400px;
+    max-height: 350px;
   }
 
   .generationPreviewImage,
@@ -460,27 +592,39 @@
 
   .imageContainer {
     flex-direction: column;
-    gap: 15px;
-  }
-
-  .imageWrapper {
-    width: 100%;
+    gap: 20px;
   }
 
   .articleBox {
-    width: 500px;
-    padding: 15px;
+    width: 600px;
+    padding: 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .generationBox {
-    width: 350px;
+  .mainContent {
     padding: 20px;
   }
-  
+
+  .hero {
+    height: 200px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .generationBox {
+    width: 400px;
+    padding: 30px;
+  }
+
   .generationPreview {
-    max-height: 300px;
+    max-height: 250px;
   }
 
   .generationPreviewImage,
@@ -489,15 +633,7 @@
   }
 
   .articleBox {
-    width: 300px;
-    padding: 10px;
-  }
-
-  .articleBox h3 {
-    font-size: 18px;
-  }
-
-  .articleImage {
-    max-height: 200px;
+    width: 350px;
+    padding: 15px;
   }
 }

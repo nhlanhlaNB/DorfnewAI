@@ -24,6 +24,7 @@ export default function Home() {
 'use client'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import '../styles/fontawesome.css';
 
 export default function RedirectToLanding() {
   const router = useRouter();

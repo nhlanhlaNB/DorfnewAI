@@ -1,13 +1,12 @@
 "use client";
 
 import styles from "../styles/MainContent.module.css";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { auth, db } from "../lib/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
-// Define interfaces for data structures
 interface MediaItem {
   type: "image" | "video" | "audio";
   src: string;
@@ -19,14 +18,6 @@ interface GeneratedContent {
   src?: string;
   title?: string;
   items?: MediaItem[];
-}
-
-interface Subscription {
-  channelName: string;
-  creator: string;
-  type: string;
-  preview: string;
-  color: string;
 }
 
 interface Topic {
@@ -46,7 +37,11 @@ interface MainContentProps {
 
 export default function MainContent({ onGenerateClick }: MainContentProps) {
   const router = useRouter();
-  const generateHandlerRef = useRef<((value: string) => void) | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Set to false by default
+  const [selectedCategory, setSelectedCategory] = useState<keyof DummyMedia | null>(null);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
 
   const topics: Topic[] = [
     { name: "Sports", color: "#ff6b6b" },
@@ -56,36 +51,12 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     { name: "Images", color: "#00ddeb" },
   ];
 
-  const subscriptions: Subscription[] = [
-    {
-      channelName: "Nhlanhla's AI Sports Clips",
-      creator: "NhlanhlaBhengu",
-      type: "Video",
-      preview: "A thrilling AI-generated extreme-sport montage",
-      color: "#ff6b6b",
-    },
-    {
-      channelName: "Sara's AI Music Vibes",
-      creator: "SaraTunes",
-      type: "Music",
-      preview: "Chill beats crafted by AI",
-      color: "#7b68ee",
-    },
-    {
-      channelName: "WildLife Wonders",
-      creator: "NatureLover",
-      type: "Image",
-      preview: "Stunning AI wildlife scenes",
-      color: "#4ecdc4",
-    },
-  ];
-
   const dummyMedia: DummyMedia = {
     Videos: [
       {
-        type: "video",
-        src: "https://videos.pexels.com/video-files/1519477/1519477-hd_1920_1080_30fps.mp4",
-        title: "Nature Video 1",
+        type: "image",
+        src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
+        title: "Space Stars Image",
       },
       {
         type: "video",
@@ -167,9 +138,9 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       },
     ],
     video: {
-      type: "video",
-      src: "https://youtu.be/Wz0jbPIWU30",
-      title: "Fallback Nature Video",
+      type: "image",
+      src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c",
+      title: "Fallback Space Image",
     },
     audio: {
       type: "audio",
@@ -177,12 +148,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       title: "Fallback Instrumental Music",
     },
   }), []);
-
-  const [subscribedChannels, setSubscribedChannels] = useState<Subscription[]>(subscriptions);
-  const [selectedCategory, setSelectedCategory] = useState<keyof DummyMedia | null>(null);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [progress, setProgress] = useState<number>(0);
-  const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
 
   const storeGeneratedContent = useCallback(async (content: MediaItem): Promise<boolean> => {
     const user = auth.currentUser;
@@ -199,6 +164,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         type: content.type,
         src: content.src,
         title: content.title,
+        category: content.type === "image" ? "Images" : content.type === "video" ? "Videos" : "Music",
         createdAt: serverTimestamp(),
       });
       console.log("Content stored in Firestore:", { docId, ...content });
@@ -364,10 +330,9 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         }
 
         setGeneratedContent(content);
-        // Convert GeneratedContent to MediaItem for storage
         const mediaItem: MediaItem = {
           type: content.type,
-          src: content.src || fallbackMedia[contentType].src, // Fallback if src is undefined
+          src: content.src || fallbackMedia[contentType].src,
           title: content.title || `Generated ${contentType}`,
         };
         const stored = await storeGeneratedContent(mediaItem);
@@ -389,7 +354,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         setGeneratedContent(content);
         const mediaItem: MediaItem = {
           type: content.type,
-          src: content.src || fallback.src, // Fallback if src is undefined
+          src: content.src || fallback.src,
           title: content.title || `Fallback ${contentType}`,
         };
         const stored = await storeGeneratedContent(mediaItem);
@@ -407,12 +372,6 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
       console.log("handleGenerateClick assigned to onGenerateClick ref");
     }
   }, [onGenerateClick, handleGenerateClick]);
-
-  const handleUnsubscribe = (channelName: string) => {
-    setSubscribedChannels(
-      subscribedChannels.filter((sub) => sub.channelName !== channelName)
-    );
-  };
 
   const handleTopicClick = (topicName: keyof DummyMedia) => {
     if (dummyMedia[topicName]) {
@@ -432,14 +391,35 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
     setGeneratedContent(null);
   };
 
+  const handleGenerateSimilar = (prompt: string) => {
+    if (onGenerateClick.current) {
+      onGenerateClick.current(prompt);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className={styles.loadingScreen}>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mainContent}>
       {isGenerating && (
         <div className={styles.generationModal}>
-          <div className={styles.generationBox}>
-            <h3>Generating Your Content</h3>
+          <div className={styles.generationBox} role="dialog" aria-labelledby="generation-title">
+            <h3 id="generation-title">Generating Your Content</h3>
             <div className={styles.progressBar}>
-              <div className={`${styles.progressFill} ${styles.progressFillActive} ${styles[`progress${progress}`]}`}></div>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${progress}%` }}
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              ></div>
             </div>
             <p className={styles.progressText}>
               {progress < 100 ? `Generating... ${progress}%` : "Generation complete!"}
@@ -471,6 +451,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                     controls
                     className={styles.generationPreviewVideo}
                     title={generatedContent.title}
+                    aria-label={generatedContent.title}
                   />
                 ) : generatedContent.type === "audio" ? (
                   <audio
@@ -478,6 +459,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                     controls
                     className={styles.generationPreviewAudio}
                     title={generatedContent.title}
+                    aria-label={generatedContent.title}
                   />
                 ) : (
                   <p>Unsupported content type</p>
@@ -493,6 +475,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                       href={item.src}
                       download={`${item.title}.png`}
                       className={styles.downloadButton}
+                      aria-label={`Download ${item.title}`}
                     >
                       Download Image {index + 1}
                     </a>
@@ -502,6 +485,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                     href={generatedContent?.src}
                     download={`${generatedContent?.title}.${generatedContent?.type === "video" ? "mp4" : "wav"}`}
                     className={styles.downloadButton}
+                    aria-label={`Download ${generatedContent?.title}`}
                   >
                     Download
                   </a>
@@ -509,6 +493,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                 <button
                   className={styles.closeButton}
                   onClick={closeGenerationModal}
+                  aria-label="Close generation modal"
                 >
                   Close
                 </button>
@@ -518,6 +503,24 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
         </div>
       )}
 
+      <div className={styles.hero}>
+        <iframe
+          className={styles.heroVideo}
+          src="https://www.youtube.com/embed/Bbp1-p2FoXU?autoplay=1&mute=1&loop=1&playlist=Bbp1-p2FoXU"
+          title="Night Sky Stars Timelapse"
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        ></iframe>
+        <div className={styles.heroOverlay}>
+          <h1>Welcome to Dorfnew</h1>
+          <p>Discover and Generate Amazing AI Content</p>
+          <button className={styles.heroButton} onClick={() => handleGenerateSimilar("Generate an awesome AI video")}>
+            Start Generating Now
+          </button>
+        </div>
+      </div>
+
       <section className={styles.exploreTopics}>
         <h2>Explore Topics</h2>
         <div className={styles.topicsGrid}>
@@ -526,6 +529,11 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
               key={topic.name}
               className={`${styles.topicCard} ${styles[`topic${topic.name.replace(' ', '')}`]}`}
               onClick={() => handleTopicClick(topic.name as keyof DummyMedia)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && handleTopicClick(topic.name as keyof DummyMedia)}
+              aria-label={`Explore ${topic.name}`}
+              style={{ background: topic.color }}
             >
               {topic.name}
             </div>
@@ -545,6 +553,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                     controls
                     src={media.src}
                     title={media.title}
+                    aria-label={media.title}
                   />
                 )}
                 {media.type === "image" && (
@@ -563,6 +572,7 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                       download={`${media.title}.jpg`}
                       className={styles.downloadButton}
                       title={`Download ${media.title}`}
+                      aria-label={`Download ${media.title}`}
                     >
                       Download
                     </a>
@@ -574,47 +584,22 @@ export default function MainContent({ onGenerateClick }: MainContentProps) {
                     controls
                     src={media.src}
                     title={media.title}
+                    aria-label={media.title}
                   />
                 )}
                 <p className={styles.mediaTitle}>{media.title}</p>
               </div>
             ))}
           </div>
-          <button className={styles.closeButton} onClick={closeMedia}>
+          <button
+            className={styles.closeButton}
+            onClick={closeMedia}
+            aria-label="Close media section"
+          >
             Close
           </button>
         </section>
       )}
-
-      <section className={styles.yourSubscriptions}>
-        <h2>Your Subscriptions</h2>
-        {subscribedChannels.length > 0 ? (
-          <div className={styles.subscriptionsGrid}>
-            {subscribedChannels.map((sub) => (
-              <div
-                key={sub.channelName}
-                className={`${styles.subscriptionCard} ${styles[`subscription${sub.channelName.replace(/[^a-zA-Z0-9]/g, '')}`]}`}
-              >
-                <div className={styles.channelInfo}>
-                  <h3>{sub.channelName}</h3>
-                  <p className={styles.creator}>by {sub.creator}</p>
-                  <p className={styles.preview}>{sub.preview}</p>
-                </div>
-                <button
-                  className={styles.unsubscribeButton}
-                  onClick={() => handleUnsubscribe(sub.channelName)}
-                >
-                  Unsubscribe
-                </button>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className={styles.noSubscriptions}>
-            You haven&apos;t subscribed to any channels yet. Explore topics to find creators!
-          </p>
-        )}
-      </section>
     </div>
   );
 }
