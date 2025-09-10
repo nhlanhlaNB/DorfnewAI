@@ -11,7 +11,7 @@ export interface Plan {
 
 export const PLANS: Plan[] = [
   {
-    title: "Basic",
+    title: "Standard",
     price: "$10",
     description:
       "Ideal for hobbyist creators who want to unlock the full potential of the platform.",
@@ -25,7 +25,7 @@ export const PLANS: Plan[] = [
     paypalPlanId: "P-4SW2058640943662UNBTJI6Y",
   },
   {
-    title: "Premium",
+    title: "Pro",
     price: "$25",
     description:
       "Great for families or small groups, with shared access for up to 4 members.",
