@@ -1,11 +1,11 @@
 // frontend/lib/plans.ts
-
 export interface Plan {
   title: string;
   price: string;
   description: string;
   features: string[];
   paypalPlanId: string;
+  seats?: number;
   popular?: boolean;
 }
 
@@ -23,12 +23,13 @@ export const PLANS: Plan[] = [
       "Save history for 30 days",
     ],
     paypalPlanId: "P-4SW2058640943662UNBTJI6Y",
+    seats: 1,
   },
   {
     title: "Pro",
     price: "$25",
     description:
-      "Great for families or small groups, with shared access for up to 4 members.",
+      "Great for families or small groups, with shared access for up to 3 members.",
     features: [
       "Everything in Standard",
       "4K quality output",
@@ -38,6 +39,8 @@ export const PLANS: Plan[] = [
       "Dedicated support",
     ],
     paypalPlanId: "P-3CS59433TT1532629NBT25SQ",
+    seats: 4, // owner + 3 guests
     popular: true,
   },
 ];
+

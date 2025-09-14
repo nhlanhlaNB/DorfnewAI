@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../lib/firebase";
+import { createOrUpdateUserProfile } from "../../lib/userProfile";
 import styles from "./login.module.css";
 
 export default function Login() {
@@ -13,11 +14,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!email || !password) {
       setError("Please fill in all fields");
       return;
@@ -26,26 +26,22 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const normalizedEmail: string = email.trim().toLowerCase();
-      
-      // Use Firebase authentication instead of simulation
+      const normalizedEmail = email.trim().toLowerCase();
       const userCredential = await signInWithEmailAndPassword(
-        auth, 
-        normalizedEmail, 
+        auth,
+        normalizedEmail,
         password
       );
-      
-      // User is signed in
+
       const user = userCredential.user;
-      console.log("User logged in:", user.uid);
-      
-      // Redirect to dashboard
+
+      // Ensure profile exists in Firestore
+      await createOrUpdateUserProfile(user, "email");
+
       router.push("/dashboard");
-      
     } catch (err: any) {
       console.error("Login error:", err);
-      
-      // Handle specific Firebase errors
+
       if (err.code === "auth/invalid-email") {
         setError("Invalid email address");
       } else if (err.code === "auth/user-not-found") {
@@ -70,22 +66,17 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      {/* Decorative background elements */}
       <div className={styles.decorative1}></div>
       <div className={styles.decorative2}></div>
       <div className={styles.decorative3}></div>
-      
+
       <div className={styles.card}>
         <div>
           <h1 className={styles.title}>Welcome back</h1>
           <p className={styles.subtitle}>Sign in to your account</p>
         </div>
 
-        {error && (
-          <div className={styles.error}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
@@ -119,7 +110,7 @@ export default function Login() {
             />
           </div>
 
-          <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+          <div style={{ textAlign: "right", marginBottom: "20px" }}>
             <button
               type="button"
               onClick={handleForgotPassword}
@@ -134,43 +125,20 @@ export default function Login() {
             disabled={isLoading}
             className={styles.button}
           >
-            {isLoading ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg
-                  className={styles.spinner}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    style={{ opacity: 0.25 }}
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    style={{ opacity: 0.75 }}
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Signing in...
-              </div>
-            ) : (
-              "Sign in"
-            )}
+            {isLoading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-          <p style={{ color: '#d1d5db', fontSize: '0.9rem' }}>
+        <div
+          style={{
+            marginTop: "30px",
+            paddingTop: "20px",
+            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          <p style={{ color: "#d1d5db", fontSize: "0.9rem" }}>
             Don&apos;t have an account?
-            <button
-              onClick={handleSignUp}
-              className={styles.link}
-            >
+            <button onClick={handleSignUp} className={styles.link}>
               Sign up
             </button>
           </p>
