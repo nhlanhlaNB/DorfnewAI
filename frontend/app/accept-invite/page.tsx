@@ -2,8 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { auth } from '../../lib/firebase';
+import { Suspense } from 'react';
 
-export default function AcceptInvitePage() {
+function AcceptInviteClient() {
   const params = useSearchParams();
   const token = params.get('token');
   const [status, setStatus] = useState('Awaiting...');
@@ -42,4 +43,12 @@ export default function AcceptInvitePage() {
   }, [token, router]);
 
   return <div><h1>Accept invite</h1><p>{status}</p></div>;
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AcceptInviteClient />
+    </Suspense>
+  );
 }
