@@ -1,10 +1,15 @@
 {
   "hosting": {
     "public": "out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
-        "source": "/__/auth/**",
-        "destination": "/__/auth/action"
+        "source": "/__/auth/action{,/**}",
+        "destination": "/__/auth/action/index.html"
       },
       {
         "source": "**",
