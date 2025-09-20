@@ -27,15 +27,18 @@ export default function ForgotPassword() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       
-      // Send password reset email using Firebase
-      await sendPasswordResetEmail(auth, normalizedEmail);
+      const actionCodeSettings = {
+        url: "https://www.dorfnew.com/__/auth/action",
+        handleCodeInApp: true,
+      };
+      
+      await sendPasswordResetEmail(auth, normalizedEmail, actionCodeSettings);
       
       setEmailSent(true);
       
     } catch (error: any) {
       console.error("Reset password error:", error);
       
-      // Handle specific Firebase errors
       switch (error.code) {
         case "auth/user-not-found":
           setError("No account found with this email address.");
@@ -66,7 +69,6 @@ export default function ForgotPassword() {
 
   return (
     <div className={styles.container}>
-      {/* Decorative background elements */}
       <div className={styles.decorative1}></div>
       <div className={styles.decorative2}></div>
       <div className={styles.decorative3}></div>
