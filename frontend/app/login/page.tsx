@@ -1,8 +1,15 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  setPersistence, 
+  browserLocalPersistence, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  OAuthProvider 
+} from "firebase/auth";
 import { auth } from "../../lib/firebase";
 import { createOrUpdateUserProfile } from "../../lib/userProfile";
 import styles from "./login.module.css";
@@ -13,6 +20,13 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  // 🔒 Keep user logged in (local persistence)
+  useEffect(() => {
+    setPersistence(auth, browserLocalPersistence).catch((err) => {
+      console.error("Persistence error:", err);
+    });
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,8 +48,6 @@ export default function Login() {
       );
 
       const user = userCredential.user;
-
-      // Ensure profile exists in Firestore
       await createOrUpdateUserProfile(user, "email");
 
       router.push("/dashboard");
@@ -56,12 +68,33 @@ export default function Login() {
     }
   };
 
-  const handleForgotPassword = () => {
-    router.push("/forgot-password");
+  const handleForgotPassword = () => router.push("/forgot-password");
+  const handleSignUp = () => router.push("/signup");
+
+  // 🔑 Google login
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      await createOrUpdateUserProfile(result.user, "google");
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Google sign-in failed.");
+    }
   };
 
-  const handleSignUp = () => {
-    router.push("/signup");
+  // 🍏 Apple login
+  const handleAppleLogin = async () => {
+    try {
+      const provider = new OAuthProvider("apple.com");
+      const result = await signInWithPopup(auth, provider);
+      await createOrUpdateUserProfile(result.user, "apple");
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Apple login error:", err);
+      setError("Apple sign-in failed.");
+    }
   };
 
   return (
@@ -129,6 +162,16 @@ export default function Login() {
           </button>
         </form>
 
+        {/* 🔑 Social login buttons */}
+        <div className={styles.socialLogin}>
+          <button onClick={handleGoogleLogin} className={styles.googleButton}>
+            Continue with Google
+          </button>
+          <button onClick={handleAppleLogin} className={styles.appleButton}>
+            Continue with Apple
+          </button>
+        </div>
+
         <div
           style={{
             marginTop: "30px",
@@ -147,3 +190,4 @@ export default function Login() {
     </div>
   );
 }
+

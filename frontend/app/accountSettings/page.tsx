@@ -7,7 +7,6 @@ import { onAuthStateChanged, User, deleteUser } from "firebase/auth";
 import styles from "../../styles/accountSettings.module.css";
 import { PLANS } from "../../lib/plans";
 
-
 export default function AccountSettings() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -41,15 +40,31 @@ export default function AccountSettings() {
 
   const handleCancelSubscription = async () => {
     if (!user) return;
-    if (!confirm("Cancel your subscription?")) return;
+    if (!confirm("Are you sure you want to cancel your subscription?")) return;
 
     try {
       setUpdating(true);
+
+      // 1️⃣ Call backend to cancel on PayPal
+      const res = await fetch("/api/paypal/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "PayPal cancel request failed");
+      }
+
+      // 2️⃣ Optimistic update
       await updateDoc(doc(db, "users", user.uid), {
         subscription: "free",
-        subscriptionCancelled: new Date(),
+        subscriptionStatus: "cancelled",
+        cancelledAt: new Date().toISOString(),
       });
-      setUserData({ ...userData, subscription: "free" });
+
+      setUserData({ ...userData, subscription: "free", subscriptionStatus: "cancelled" });
       alert("Your subscription has been cancelled.");
     } catch (error) {
       console.error("Error cancelling subscription:", error);
@@ -59,9 +74,41 @@ export default function AccountSettings() {
     }
   };
 
+  const handleResumeSubscription = async () => {
+    if (!user) return;
+    if (!confirm("Resume your subscription?")) return;
+
+    try {
+      setUpdating(true);
+
+      const res = await fetch("/api/paypal/resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid: user.uid }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error || "PayPal resume request failed");
+      }
+
+      await updateDoc(doc(db, "users", user.uid), {
+        subscriptionStatus: "active",
+      });
+
+      setUserData({ ...userData, subscriptionStatus: "active" });
+      alert("Your subscription has been resumed.");
+    } catch (error) {
+      console.error("Error resuming subscription:", error);
+      alert("Failed to resume subscription. Try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
-    if (!confirm("Are you sure you want to permanently delete your account?")) return;
+    if (!confirm("Are you absolutely sure you want to permanently delete your account?")) return;
 
     try {
       setUpdating(true);
@@ -121,8 +168,12 @@ export default function AccountSettings() {
         <div className={styles.settingsContainer}>
           <div className={styles.settingsCard}>
             <h2 className={styles.cardTitle}>Subscription</h2>
-            <p>Current Plan: <b>{currentPlan.title}</b></p>
-            {currentPlanKey !== "free" && (
+            <p>
+              Current Plan: <b>{currentPlan.title}</b>
+            </p>
+
+            {/* Active subscription */}
+            {currentPlanKey !== "free" && userData?.subscriptionStatus !== "cancelled" && (
               <>
                 <p>{currentPlan.price}/month</p>
                 <button
@@ -134,7 +185,20 @@ export default function AccountSettings() {
                 </button>
               </>
             )}
-            {currentPlanKey === "free" && (
+
+            {/* Cancelled but still resumable */}
+            {userData?.subscriptionStatus === "cancelled" && (
+              <button
+                className={styles.actionButton}
+                onClick={handleResumeSubscription}
+                disabled={updating}
+              >
+                {updating ? "Processing..." : "Resume Subscription"}
+              </button>
+            )}
+
+            {/* Free plan */}
+            {currentPlanKey === "free" && userData?.subscriptionStatus !== "cancelled" && (
               <button
                 className={styles.actionButton}
                 onClick={() => router.push("/SubscriptionPage")}

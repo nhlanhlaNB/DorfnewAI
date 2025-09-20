@@ -60,7 +60,7 @@ export default function Signup() {
       await updateProfile(user, { displayName: name });
 
       // Save profile
-      await createOrUpdateUserProfile(user, "email", { name });
+      await createOrUpdateUserProfile(user, "email");
 
       await sendEmailVerification(user);
       router.push("/verify-email");

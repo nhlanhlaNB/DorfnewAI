@@ -33,19 +33,21 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
     { name: "Audio", colorClass: "mediaAudio" },
   ];
 
+  // --- Fetch user info safely ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && user.email) {
+      if (user) {
         try {
-          setUserEmail(user.email);
-          const userDocRef = doc(db, "app_user", user.email);
+          setUserEmail(user.email || null);
+
+          // ✅ Use UID as doc ID to match Firestore rules
+          const userDocRef = doc(db, "app_user", user.uid);
           const userSnap = await getDoc(userDocRef);
 
           const displayName =
             (userSnap.exists() && userSnap.data()?.name) ||
             user.displayName ||
-            user.email.split("@")[0] ||
-            "User";
+            (user.email ? user.email.split("@")[0] : "User");
 
           setUserName(displayName);
         } catch (error: unknown) {
@@ -62,17 +64,24 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
     return () => unsubscribe();
   }, [auth, db, router]);
 
+  // --- File upload handler ---
   const handleUploadClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && userEmail) {
-      if (userEmail !== ADMIN_EMAIL) {
-        const userDocRef = doc(db, "app_user", userEmail);
+    if (!file) return;
+
+    if (!auth.currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    // ✅ Admin bypass
+    if (auth.currentUser.email !== ADMIN_EMAIL) {
+      try {
+        const userDocRef = doc(db, "app_user", auth.currentUser.uid);
         const userSnap = await getDoc(userDocRef);
         const isSubscribed = userSnap.exists() && userSnap.data()?.subscribed;
 
@@ -80,49 +89,49 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
           setShowPaymentPrompt(true);
           return;
         }
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-      try {
-        const response = await fetch("/api/generate-from-file", {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) throw new Error("File upload failed");
-        const data = await response.json();
-        console.log("Generated content from file:", data);
       } catch (error: unknown) {
-        console.error("Error generating from file:", (error as Error).message);
+        console.error("Error checking subscription:", (error as Error).message);
+        setShowPaymentPrompt(true);
+        return;
       }
+    }
+
+    // Proceed with file upload
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await fetch("/api/generate-from-file", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error("File upload failed");
+      const data = await response.json();
+      console.log("Generated content from file:", data);
+    } catch (error: unknown) {
+      console.error("Error generating from file:", (error as Error).message);
     }
   };
 
-  const handleGenerate = async () => {
-    setShowMediaTypePrompt(true);
-  };
+  // --- Media generation ---
+  const handleGenerate = () => setShowMediaTypePrompt(true);
 
   const handleMediaTypeSelect = async (mediaType: string) => {
     const prompt = searchInputRef.current?.value.trim() || "";
-    console.log(`Selected media type: ${mediaType}, with prompt: ${prompt}`);
     setShowMediaTypePrompt(false);
 
-    if (!userEmail) {
+    if (!auth.currentUser) {
       router.push("/login");
       return;
     }
 
-    if (userEmail === ADMIN_EMAIL) {
-      if (onGenerateClick.current) {
-        onGenerateClick.current(`${prompt} ${mediaType.toLowerCase()}`);
-      } else {
-        console.error("onGenerateClick ref is not defined");
-      }
+    // Admin bypass
+    if (auth.currentUser.email === ADMIN_EMAIL) {
+      onGenerateClick.current?.(`${prompt} ${mediaType.toLowerCase()}`);
       return;
     }
 
     try {
-      const userDocRef = doc(db, "app_user", userEmail);
+      const userDocRef = doc(db, "app_user", auth.currentUser.uid);
       const userSnap = await getDoc(userDocRef);
       const isSubscribed = userSnap.exists() && userSnap.data()?.subscribed;
 
@@ -131,17 +140,14 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
         return;
       }
 
-      if (onGenerateClick.current) {
-        onGenerateClick.current(`${prompt} ${mediaType.toLowerCase()}`);
-      } else {
-        console.error("onGenerateClick ref is not defined");
-      }
+      onGenerateClick.current?.(`${prompt} ${mediaType.toLowerCase()}`);
     } catch (error: unknown) {
       console.error("Error checking subscription:", (error as Error).message);
       setShowPaymentPrompt(true);
     }
   };
 
+  // --- Sign out ---
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -153,13 +159,8 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
     }
   };
 
-  const closePaymentPrompt = () => {
-    setShowPaymentPrompt(false);
-  };
-
-  const closeMediaTypePrompt = () => {
-    setShowMediaTypePrompt(false);
-  };
+  const closePaymentPrompt = () => setShowPaymentPrompt(false);
+  const closeMediaTypePrompt = () => setShowMediaTypePrompt(false);
 
   return (
     <header className={styles.header}>
@@ -178,16 +179,14 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
               >
                 View Subscription Plans
               </button>
-              <button
-                className={styles.cancelButton}
-                onClick={closePaymentPrompt}
-              >
+              <button className={styles.cancelButton} onClick={closePaymentPrompt}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+
       {showMediaTypePrompt && (
         <div className={mainStyles.generationModal}>
           <div className={mainStyles.generationBox}>
@@ -203,15 +202,13 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
                 </div>
               ))}
             </div>
-            <button
-              className={mainStyles.closeButton}
-              onClick={closeMediaTypePrompt}
-            >
+            <button className={mainStyles.closeButton} onClick={closeMediaTypePrompt}>
               Cancel
             </button>
           </div>
         </div>
       )}
+
       {!hideSearch && (
         <div className={styles.searchContainer}>
           <button
@@ -245,6 +242,7 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
           </button>
         </div>
       )}
+
       <div className={styles.userContainer}>
         <div className={styles.userGreeting}>
           Hello <span className={styles.userName}>{userName}</span>
@@ -256,3 +254,4 @@ export default function Header({ onGenerateClick, hideSearch = false }: HeaderPr
     </header>
   );
 }
+
