@@ -1,7 +1,13 @@
-// app/src/page.tsx
-"use client";
-import LandingPage from "./components/LandingPage";
+import { Suspense } from "react";
+import LandingPageClient from "./components/LandingPage";
+import styles from "../../styles/landing.module.css";
 
 export default function Page() {
-  return <LandingPage />;
+  return (
+    <div className={styles.minHScreen}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <LandingPageClient />
+      </Suspense>
+    </div>
+  );
 }
