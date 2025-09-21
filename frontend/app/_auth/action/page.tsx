@@ -1,44 +1,51 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { auth } from "../../../lib/firebase";
-import { verifyPasswordResetCode, applyActionCode } from "firebase/auth";
-
-export default function HandleAction() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const mode = searchParams.get("mode");
-    const oobCode = searchParams.get("oobCode");
-
-    if (oobCode) {
-      if (mode === "resetPassword") {
-        verifyPasswordResetCode(auth, oobCode)
-          .then((email) => {
-            router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);
-          })
-          .catch((error) => {
-            console.error("Password reset verification error:", error);
-            router.push("/forgot-password?error=" + encodeURIComponent("Invalid or expired reset link. Please try again."));
-          });
-      } else if (mode === "verifyEmail") {
-        applyActionCode(auth, oobCode)
-          .then(() => {
-            router.push("/login?message=Email verified successfully");
-          })
-          .catch((error) => {
-            console.error("Email verification error:", error);
-            router.push("/verify-email?error=" + encodeURIComponent("Invalid or expired verification link."));
-          });
-      } else {
-        router.push("/login?error=invalid-action");
-      }
-    } else {
-      router.push("/login?error=missing-code");
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  trailingSlash: false,
+  outputFileTracingRoot: 'C:/Users/user/Documents/GitHub/Togo/New/DorfnewAI/frontend',
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'videos.pexels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pics.craiyon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'png.pngtree.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.pixabay.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+    ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Disable ESLint during builds
+  },
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
     }
-  }, [searchParams, router]);
+    return config;
+  },
+};
 
-  return <div>Processing request... Please wait.</div>;
-}
+export default nextConfig;
