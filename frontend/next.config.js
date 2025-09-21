@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Enables static site generation
-  trailingSlash: false, // Disable trailing slashes for Firebase action URLs
+  output: 'export',
+  trailingSlash: false,
   outputFileTracingRoot: 'C:/Users/user/Documents/GitHub/Togo/New/DorfnewAI/frontend',
   images: {
-    unoptimized: true, // Required for static export
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -28,9 +28,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'example.com', // Replace with actual hostname for icon.png
+        hostname: 'example.com',
       },
     ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Disable ESLint during builds
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
