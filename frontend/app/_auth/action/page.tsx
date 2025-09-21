@@ -14,7 +14,7 @@ export default function HandleAction() {
     const oobCode = searchParams.get("oobCode");
 
     if (oobCode) {
-      if (mode === "resetPassword") {
+      if (mode === "resetPassword" || mode === "action") {
         verifyPasswordResetCode(auth, oobCode)
           .then((email) => {
             router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);

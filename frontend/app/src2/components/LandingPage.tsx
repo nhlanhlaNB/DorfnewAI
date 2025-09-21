@@ -1,8 +1,12 @@
+"use client";
+
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../../../styles/landing.module.css";
+
 
 const ThreeDBackground = () => {
   return (
@@ -23,8 +27,23 @@ const ThreeDBackground = () => {
   );
 };
 
-const LandingPage = () => {
+const LandingPageClient = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    const oobCode = searchParams.get("oobCode");
+    const email = searchParams.get("email") || "";
+    if (mode && oobCode) {
+      if (mode === "resetPassword" || mode === "action") {
+        router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);
+      } else if (mode === "verifyEmail") {
+        router.push(`/login?message=Email verification initiated&oobCode=${oobCode}`);
+      }
+    }
+  }, [searchParams, router]);
 
   const features = [
     {
@@ -299,4 +318,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+export default LandingPageClient;
