@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export', // Enables static site generation
-  trailingSlash: true, // Adds trailing slashes to URLs
+  trailingSlash: false, // Disable trailing slashes for Firebase action URLs
+  outputFileTracingRoot: 'C:/Users/user/Documents/GitHub/Togo/New/DorfnewAI/frontend',
   images: {
-    unoptimized: true, // Disables image optimization for static export
+    unoptimized: true, // Required for static export
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,10 +26,9 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn.pixabay.com',
       },
-      // Add this if your icon.png is remote (replace 'example.com' with the actual hostname)
       {
         protocol: 'https',
-        hostname: 'example.com', // e.g., 'your-cdn.com' or wherever the icon is hosted
+        hostname: 'example.com', // Replace with actual hostname for icon.png
       },
     ],
   },
@@ -45,4 +45,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
