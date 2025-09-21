@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { verifyPasswordResetCode } from "firebase/auth";
+import { auth } from "../../../lib/firebase"; // Adjust the path if your firebase config is elsewhere
 import styles from "../../../styles/landing.module.css";
 
 
@@ -31,19 +33,35 @@ const LandingPageClient = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
     const mode = searchParams.get("mode");
     const oobCode = searchParams.get("oobCode");
-    const email = searchParams.get("email") || "";
+
     if (mode && oobCode) {
       if (mode === "resetPassword" || mode === "action") {
-        router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);
+        verifyPasswordResetCode(auth, oobCode)
+          .then((email) => {
+            router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);
+          })
+          .catch((error) => {
+            console.error("Password reset verification error:", error);
+            router.push("/forgot-password?error=" + encodeURIComponent("Invalid or expired reset link. Please try again."));
+          });
       } else if (mode === "verifyEmail") {
         router.push(`/login?message=Email verification initiated&oobCode=${oobCode}`);
+      } else {
+        router.push("/login?error=invalid-action");
       }
+    } else {
+      setIsProcessing(false); // Render landing page if no action
     }
   }, [searchParams, router]);
+
+  if (isProcessing) {
+    return <div>Processing request...</div>;
+  }
 
   const features = [
     {
