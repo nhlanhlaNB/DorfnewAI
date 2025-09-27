@@ -6,9 +6,8 @@ import { Bot, Image, Music, Video, Check, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyPasswordResetCode } from "firebase/auth";
-import { auth } from "../../../lib/firebase"; // Adjust the path if your firebase config is elsewhere
+import { auth } from "../../../lib/firebase";
 import styles from "../../../styles/landing.module.css";
-
 
 const ThreeDBackground = () => {
   return (
@@ -43,21 +42,44 @@ const LandingPageClient = () => {
       if (mode === "resetPassword" || mode === "action") {
         verifyPasswordResetCode(auth, oobCode)
           .then((email) => {
-            router.push(`/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(email)}`);
+            router.push(
+              `/reset-password?oobCode=${oobCode}&email=${encodeURIComponent(
+                email
+              )}`
+            );
           })
           .catch((error) => {
             console.error("Password reset verification error:", error);
-            router.push("/forgot-password?error=" + encodeURIComponent("Invalid or expired reset link. Please try again."));
+            router.push(
+              "/forgot-password?error=" +
+                encodeURIComponent(
+                  "Invalid or expired reset link. Please try again."
+                )
+            );
           });
       } else if (mode === "verifyEmail") {
-        router.push(`/login?message=Email verification initiated&oobCode=${oobCode}`);
+        router.push(
+          `/login?message=Email verification initiated&oobCode=${oobCode}`
+        );
       } else {
         router.push("/login?error=invalid-action");
       }
     } else {
-      setIsProcessing(false); // Render landing page if no action
+      setIsProcessing(false);
     }
   }, [searchParams, router]);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.gpteng.co/gptengineer.js";
+    script.type = "module";
+    document.head.appendChild(script);
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
 
   if (isProcessing) {
     return <div>Processing request...</div>;
@@ -91,7 +113,11 @@ const LandingPageClient = () => {
       name: "Free Trial",
       price: "Free",
       description: "Try once without signing up",
-      features: ["One free generation", "Basic quality", "Standard processing speed"],
+      features: [
+        "One free generation",
+        "Basic quality",
+        "Standard processing speed",
+      ],
       buttonText: "Try Now",
       buttonVariant: "outline" as const,
       highlight: false,
@@ -115,34 +141,18 @@ const LandingPageClient = () => {
     },
     {
       name: "Pro",
-      price: "$25/mo",
-      description: "For professional content creators",
+      price: "Custom Pricing",
+      description: "For API or business purposes",
       features: [
-        "Everything in Standard",
-        "4K quality output",
-        "Express processing",
-        "Advanced editing tools",
-        "Commercial usage rights",
-        "Dedicated support",
+        "Dedicated account manager",
+        "Custom AI model training",
       ],
       buttonText: "Sign Up",
       buttonVariant: "outline" as const,
       highlight: false,
-      path: "/signup",
+      path: "/contact",
     },
   ];
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://cdn.gpteng.co/gptengineer.js";
-    script.type = "module";
-    document.head.appendChild(script);
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
 
   return (
     <div className={styles.minHScreen}>
@@ -153,11 +163,15 @@ const LandingPageClient = () => {
             <Link href="/" className={styles.logo}>
               DorfNewAI
             </Link>
-            
+
             {/* Desktop Navigation */}
             <nav className={styles.desktopNav}>
-              <a href="#features" className={styles.navLink}>Features</a>
-              <a href="#pricing" className={styles.navLink}>Pricing</a>
+              <a href="#features" className={styles.navLink}>
+                Features
+              </a>
+              <a href="#pricing" className={styles.navLink}>
+                Pricing
+              </a>
               <Button variant="outline" asChild>
                 <Link href="/login">Sign In</Link>
               </Button>
@@ -171,7 +185,11 @@ const LandingPageClient = () => {
               className={styles.mobileMenuButton}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className={styles.icon} /> : <Menu className={styles.icon} />}
+              {isMenuOpen ? (
+                <X className={styles.icon} />
+              ) : (
+                <Menu className={styles.icon} />
+              )}
             </button>
           </div>
 
@@ -179,8 +197,12 @@ const LandingPageClient = () => {
           {isMenuOpen && (
             <div className={styles.mobileNav}>
               <nav className={styles.mobileNavContent}>
-                <a href="#features" className={styles.navLink}>Features</a>
-                <a href="#pricing" className={styles.navLink}>Pricing</a>
+                <a href="#features" className={styles.navLink}>
+                  Features
+                </a>
+                <a href="#pricing" className={styles.navLink}>
+                  Pricing
+                </a>
                 <Button variant="outline" asChild className={styles.fullWidth}>
                   <Link href="/login">Sign In</Link>
                 </Button>
@@ -197,19 +219,25 @@ const LandingPageClient = () => {
         {/* Hero Section */}
         <section className={styles.heroSection}>
           <ThreeDBackground />
-          
+
           <div className={styles.heroContent}>
             <h1 className={styles.heroTitle}>
               Create Stunning AI-Generated Content with DorfNewAI
             </h1>
             <p className={styles.heroSubtitle}>
-              Unleash your creativity with our advanced AI tools. Generate impressive videos, images, and music in seconds.
+              Unleash your creativity with our advanced AI tools. Generate
+              impressive videos, images, and music in seconds.
             </p>
             <div className={styles.heroButtons}>
               <Button size="lg" asChild className={styles.primaryButton}>
                 <Link href="/signup">Try for Free</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className={styles.secondaryButton}>
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className={styles.secondaryButton}
+              >
                 <Link href="/signup">Sign Up</Link>
               </Button>
             </div>
@@ -224,10 +252,11 @@ const LandingPageClient = () => {
                 Experience the Power of DorfNewAI
               </h2>
               <p className={styles.sectionSubtitle}>
-                Our powerful AI tools help you create professional content in minutes, not hours
+                Our powerful AI tools help you create professional content in
+                minutes, not hours
               </p>
             </div>
-            
+
             <div className={styles.featuresGrid}>
               {features.map((feature) => {
                 const IconComponent = feature.icon;
@@ -237,7 +266,9 @@ const LandingPageClient = () => {
                       <IconComponent className={styles.icon} />
                     </div>
                     <h3 className={styles.featureTitle}>{feature.title}</h3>
-                    <p className={styles.featureDescription}>{feature.description}</p>
+                    <p className={styles.featureDescription}>
+                      {feature.description}
+                    </p>
                   </div>
                 );
               })}
@@ -249,22 +280,22 @@ const LandingPageClient = () => {
         <section id="pricing" className={styles.pricingSection}>
           <div className={styles.container}>
             <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>
-                Simple, transparent pricing
-              </h2>
-              <p className={styles.sectionSubtitle}>Choose the plan that works best for your needs</p>
+              <h2 className={styles.sectionTitle}>Simple, transparent pricing</h2>
+              <p className={styles.sectionSubtitle}>
+                Choose the plan that works best for your needs
+              </p>
             </div>
-            
+
             <div className={styles.pricingGrid}>
               {pricingPlans.map((plan) => (
                 <div
                   key={plan.name}
-                  className={`${styles.pricingCard} ${plan.highlight ? styles.highlightCard : ''}`}
+                  className={`${styles.pricingCard} ${
+                    plan.highlight ? styles.highlightCard : ""
+                  }`}
                 >
                   {plan.highlight && (
-                    <div className={styles.popularBadge}>
-                      Most Popular
-                    </div>
+                    <div className={styles.popularBadge}>Most Popular</div>
                   )}
                   <h3 className={styles.planName}>{plan.name}</h3>
                   <div className={styles.planPrice}>{plan.price}</div>
@@ -277,9 +308,9 @@ const LandingPageClient = () => {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    variant={plan.buttonVariant} 
-                    asChild 
+                  <Button
+                    variant={plan.buttonVariant}
+                    asChild
                     className={styles.fullWidth}
                   >
                     <Link href={plan.path}>{plan.buttonText}</Link>
@@ -298,37 +329,65 @@ const LandingPageClient = () => {
             <div>
               <h3 className={styles.footerTitle}>DorfNewAI</h3>
               <p className={styles.footerDescription}>
-                Advanced AI tools for creating stunning videos, images, and music.
+                Advanced AI tools for creating stunning videos, images, and
+                music.
               </p>
             </div>
             <div>
               <h4 className={styles.footerHeading}>Product</h4>
               <ul className={styles.footerLinks}>
-                <li><a href="#features" className={styles.footerLink}>Features</a></li>
-                <li><a href="#pricing" className={styles.footerLink}>Pricing</a></li>
-                <li><a href="#try-now" className={styles.footerLink}>Try for Free</a></li>
+                <li>
+                  <a href="#features" className={styles.footerLink}>
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className={styles.footerLink}>
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#try-now" className={styles.footerLink}>
+                    Try for Free
+                  </a>
+                </li>
               </ul>
             </div>
+
             <div>
               <h4 className={styles.footerHeading}>Resources</h4>
               <ul className={styles.footerLinks}>
-                <li><Link href="/blog" className={styles.footerLink}>Blog</Link></li>
-                <li><Link href="/tutorials" className={styles.footerLink}>Tutorials</Link></li>
                 <li><Link href="/support" className={styles.footerLink}>Support</Link></li>
+                <li><Link href="/faq" className={styles.footerLink}>FAQ</Link></li>
               </ul>
             </div>
+
             <div>
               <h4 className={styles.footerHeading}>Company</h4>
               <ul className={styles.footerLinks}>
-                <li><Link href="/about" className={styles.footerLink}>About</Link></li>
-                <li><Link href="/contact" className={styles.footerLink}>Contact</Link></li>
-                <li><Link href="/privacy" className={styles.footerLink}>Privacy Policy</Link></li>
+                <li>
+                  <Link href="/about" className={styles.footerLink}>
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className={styles.footerLink}>
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className={styles.footerLink}>
+                    Privacy Policy
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className={styles.footerBottom}>
-            <p className={styles.copyright}>© 2025 DorfNewAI. All rights reserved.</p>
+            <p className={styles.copyright}>
+              © 2025 DorfNewAI. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

@@ -19,6 +19,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import Image from "next/image";
 import { FaSearch, FaHeart, FaTimes, FaBook, FaTrash } from "react-icons/fa";
 import styles from "../../styles/Library.module.css";
+
 interface MediaItem {
   id: string;
   type: "image" | "video" | "audio";
@@ -28,6 +29,7 @@ interface MediaItem {
   category?: string;
   isFavorite?: boolean;
 }
+
 interface LibraryDocument {
   userId: string;
   type: "image" | "video" | "audio";
@@ -37,10 +39,12 @@ interface LibraryDocument {
   category?: string;
   isFavorite?: boolean;
 }
+
 interface Topic {
   name: string;
   color: string;
 }
+
 export default function LibraryPage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,11 +56,13 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
   const router = useRouter();
+
   const topics: Topic[] = [
     { name: "Music", color: "#7b68ee" },
     { name: "Videos", color: "#ff8e53" },
     { name: "Images", color: "#00ddeb" },
   ];
+
   const dummyMedia = {
     Videos: [
       {
@@ -110,6 +116,7 @@ export default function LibraryPage() {
       },
     ],
   };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
@@ -121,6 +128,7 @@ export default function LibraryPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
   useEffect(() => {
     if (user) {
       const storeHardcodedMedia = async () => {
@@ -159,6 +167,7 @@ export default function LibraryPage() {
       storeHardcodedMedia();
     }
   }, [user]);
+
   const migrateLibraryDocuments = async () => {
     if (!user) return;
     try {
@@ -188,6 +197,7 @@ export default function LibraryPage() {
       console.error("Error migrating library documents:", (err as Error).message);
     }
   };
+
   const fetchMediaItems = async () => {
     try {
       setLoading(true);
@@ -224,11 +234,13 @@ export default function LibraryPage() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (user) {
       fetchMediaItems();
     }
   }, [user, selectedCategory, searchQuery]);
+
   const toggleFavorite = async (itemId: string, isFavorite: boolean) => {
     if (!user) {
       setError("You must be logged in to favorite items.");
@@ -244,6 +256,7 @@ export default function LibraryPage() {
       setError("Failed to update favorite status. Please try again.");
     }
   };
+
   const deleteMediaItem = async (itemId: string) => {
     if (!user) {
       setError("You must be logged in to delete items.");
@@ -254,6 +267,7 @@ export default function LibraryPage() {
     setPreviewItem(null); // Prevent preview modal from opening
     setShowDeleteModal(itemId);
   };
+
   const confirmDelete = async () => {
     if (!showDeleteModal) {
       console.log("No item selected for deletion");
@@ -273,20 +287,25 @@ export default function LibraryPage() {
       setShowDeleteModal(null);
     }
   };
+
   const closeModals = () => {
     setShowDeleteModal(null);
     setShowSuccessModal(false);
     setPreviewItem(null);
   };
+
   const handleTopicClick = (topicName: string) => {
     setSelectedCategory(topicName);
   };
+
   const closeMedia = () => {
     setSelectedCategory(null);
   };
+
   const handleGenerateRedirect = () => {
     router.push("/dashboard");
   };
+
   if (loading) {
     return (
       <div className={styles.libraryContainer}>
@@ -298,17 +317,32 @@ export default function LibraryPage() {
       </div>
     );
   }
+
   return (
     <div className={styles.libraryContainer}>
+      {/* JUST ADDED THIS X BUTTON - NOTHING ELSE CHANGED */}
+      <div className={styles.libraryHeader}>
+        <button
+          className={styles.libraryCloseButton}
+          onClick={() => router.push("/dashboard")}
+          aria-label="Back to dashboard"
+        >
+          <FaTimes />
+        </button>
+      </div>
+
+      {/* EVERYTHING BELOW REMAINS EXACTLY THE SAME */}
       <div className={styles.iconContainer}>
         <FaBook title="Library" aria-label="Library icon" />
       </div>
+
       {error && (
         <div className={styles.error}>
           {error}
           <button onClick={() => setError(null)} aria-label="Dismiss error">Dismiss</button>
         </div>
       )}
+
       {showDeleteModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -325,6 +359,7 @@ export default function LibraryPage() {
           </div>
         </div>
       )}
+
       {showSuccessModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -338,6 +373,7 @@ export default function LibraryPage() {
           </div>
         </div>
       )}
+
       {previewItem && (
         <div className={styles.previewModal}>
           <div className={styles.previewContent}>
@@ -385,6 +421,7 @@ export default function LibraryPage() {
           </div>
         </div>
       )}
+
       <section className={styles.searchBar}>
         <FaSearch className={styles.searchIcon} />
         <input
@@ -396,6 +433,7 @@ export default function LibraryPage() {
           aria-label="Search media items"
         />
       </section>
+
       <section className={styles.exploreTopics}>
         <h2>Explore Topics</h2>
         <div className={styles.topicsGrid}>
@@ -415,6 +453,7 @@ export default function LibraryPage() {
           ))}
         </div>
       </section>
+
       <section className={styles.mediaDisplay}>
         <h3>Media Library</h3>
         {mediaItems.length === 0 ? (

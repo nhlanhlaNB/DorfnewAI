@@ -156,8 +156,8 @@ export default function AccountSettings() {
       <header className={styles.header}>
         <button
           className={styles.closeButton}
-          onClick={() => router.push("/")}
-          title="Back to Home"
+          onClick={() => router.push("/dashboard")}
+          title="Back to Dashboard"
         >
           <i className="fas fa-times"></i>
         </button>

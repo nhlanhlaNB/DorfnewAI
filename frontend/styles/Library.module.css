@@ -1,3 +1,27 @@
+/* X Button for Library Header - Matching Subscription page style */
+.libraryHeader {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.libraryCloseButton {
+  background: transparent;
+  border: none;
+  color: #b0b0c0;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+}
+
+.libraryCloseButton:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+
 .libraryContainer {
   display: flex;
   flex-direction: column;
@@ -138,6 +162,29 @@
   color: #b0b0c0;
   margin-bottom: 25px;
   font-size: 1.1rem;
+}
+
+/* X Button for Library Header - Matching Subscription page style */
+.libraryHeader {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.libraryCloseButton {
+  background: transparent;
+  border: none;
+  color: #b0b0c0;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+}
+
+.libraryCloseButton:hover {
+  color: #ffffff;
+  transform: scale(1.1);
 }
 
 .addButton {
@@ -379,6 +426,8 @@
   position: relative;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
+
+
 
 .closePreview {
   position: absolute;

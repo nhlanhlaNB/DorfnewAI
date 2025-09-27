@@ -141,13 +141,7 @@ export default function Signup() {
             {socialLoading.google ? "Signing in..." : "Sign up with Google"}
           </button>
 
-          <button
-            onClick={() => handleSocialSignIn("apple")}
-            disabled={socialLoading.apple}
-            className={`${styles.socialButton} ${styles.appleButton}`}
-          >
-            {socialLoading.apple ? "Signing in..." : "Sign up with Apple"}
-          </button>
+          
         </div>
 
         <div className={styles.divider}>

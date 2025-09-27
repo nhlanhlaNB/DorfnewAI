@@ -167,9 +167,7 @@ export default function Login() {
           <button onClick={handleGoogleLogin} className={styles.googleButton}>
             Continue with Google
           </button>
-          <button onClick={handleAppleLogin} className={styles.appleButton}>
-            Continue with Apple
-          </button>
+          
         </div>
 
         <div

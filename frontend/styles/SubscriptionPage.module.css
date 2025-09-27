@@ -394,4 +394,51 @@
   .planPrice {
     font-size: 2rem;
   }
+
+  /* Contact Note Styles */
+.contactNote {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #b0b0c0;
+  line-height: 1.5;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #00ddeb;
+}
+
+.contactNote strong {
+  color: #00ddeb;
+  font-weight: 600;
+}
+
+/* Center single plan */
+.pricingContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Ensure single plan is properly centered */
+@media (min-width: 768px) {
+  .pricingContainer {
+    justify-content: center;
+  }
+}
+
+/* Update subtitle for single plan */
+.pageSubtitle {
+  font-size: 1.2rem;
+  color: #b0b0c0;
+  margin-bottom: 40px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
 }

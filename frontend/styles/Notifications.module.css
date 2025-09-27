@@ -22,6 +22,7 @@
     font-size: 2rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    padding: 5px;
   }
   
   .closeButton:hover {
@@ -33,6 +34,10 @@
     flex: 1;
     padding: 40px 20px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
   
   .pageTitle {
@@ -48,59 +53,30 @@
     margin-bottom: 40px;
   }
   
-  .notificationContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .notificationCard {
+  .emptyState {
+    text-align: center;
+    padding: 60px 40px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 15px;
-    padding: 30px;
+    max-width: 500px;
     width: 100%;
-    max-width: 300px;
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
   
-  .notificationCard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  }
-  
-  .cardTitle {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 10px;
-  }
-  
-  .cardDescription {
-    font-size: 1rem;
-    color: #b0b0c0;
+  .emptyIcon {
+    font-size: 4rem;
     margin-bottom: 20px;
   }
   
-  .actionButton {
-    padding: 10px 25px;
-    background: linear-gradient(90deg, #7b68ee, #00ddeb);
+  .emptyTitle {
+    font-size: 1.8rem;
     color: #ffffff;
-    border: none;
-    border-radius: 25px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 100%;
+    margin-bottom: 15px;
   }
   
-  .actionButton:hover {
-    background: linear-gradient(90deg, #00ddeb, #7b68ee);
-    transform: scale(1.05);
+  .emptyMessage {
+    font-size: 1.1rem;
+    color: #b0b0c0;
+    line-height: 1.6;
   }
   
   .footer {
@@ -120,20 +96,27 @@
   }
   
   @media (max-width: 768px) {
-    .notificationContainer {
-      flex-direction: column;
-      align-items: center;
-    }
-  
-    .notificationCard {
-      max-width: 100%;
-    }
-  
     .pageTitle {
       font-size: 2rem;
     }
-  
+    
     .pageSubtitle {
+      font-size: 1rem;
+    }
+    
+    .emptyState {
+      padding: 40px 20px;
+    }
+    
+    .emptyIcon {
+      font-size: 3rem;
+    }
+    
+    .emptyTitle {
+      font-size: 1.5rem;
+    }
+    
+    .emptyMessage {
       font-size: 1rem;
     }
   }

@@ -101,7 +101,7 @@ export default function Dashboard() {
 
         {/* 🔹 Membership Management Section */}
         {userDoc?.plan === 'pro' && userDoc.role === 'owner' && (
-          <div style={{ marginTop: '2rem' }}>
+          <div className={styles.membershipSection}>
             <h2>Manage Pro Members</h2>
             <input
               type="email"

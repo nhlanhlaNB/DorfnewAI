@@ -10,7 +10,7 @@ export default function MyChannel() {
   const [isPrivate, setIsPrivate] = useState(false);
 
   const handleCloseClick = () => {
-    router.push("/");
+    router.push("/dashboard"); // Fixed: changed "/" to "/dashboard"
   };
 
   const handleCreateChannel = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -27,8 +27,8 @@ export default function MyChannel() {
         <button
           className={styles.closeButton}
           onClick={handleCloseClick}
-          title="Back to Home"
-          aria-label="Back to Home"
+          title="Back to Dashboard" // Also updated the title for clarity
+          aria-label="Back to dashboard"
         >
           <i className="fas fa-times"></i>
         </button>
